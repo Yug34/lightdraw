@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 function App() {
   const [wasmMsg, setWasmMsg] = useState<string>('');
   const [sum, setSum] = useState<number | null>(null);
-  const [selectedShapeId, setSelectedShapeId] = useState<string | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -18,10 +17,6 @@ function App() {
       }
     })();
   }, []);
-
-  const handleShapeSelect = (shapeId: string | null) => {
-    setSelectedShapeId(shapeId);
-  };
 
   const handleGreet = async () => {
     try {
@@ -46,9 +41,6 @@ function App() {
             >
               Greet from WASM
             </button>
-            {selectedShapeId && (
-              <div className="text-blue-600">Selected: {selectedShapeId}</div>
-            )}
           </div>
         </div>
       </header>
