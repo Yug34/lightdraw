@@ -33,7 +33,7 @@ function App() {
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-bold text-gray-900">LightDraw</h1>
           <div className="flex items-center space-x-4 text-sm text-gray-600">
-            <div>WASM: {wasmMsg || 'loading...'}</div>
+            <div>WASM aaaa: {wasmMsg || 'loading...'}</div>
             <div>2 + 40 = {sum ?? '...'}</div>
             <button
               onClick={handleGreet}
