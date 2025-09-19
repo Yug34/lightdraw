@@ -23,7 +23,7 @@ jobs:
 
       - name: Build Rust project
         run: |
-          cd engine && wasm-pack build && cd ..
+          cd engine && wasm-pack build --target web --out-dir pkg && cd ..
 
       - name: Install node dependencies
         run: |
