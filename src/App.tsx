@@ -1,11 +1,10 @@
-import { Button } from '@/components/ui/button';
-import { addInWasm, helloFromWasm } from '@/lib/wasm';
+import { addInWasm, greetFromWasm, helloFromWasm } from '@/lib/wasm';
 import { useEffect, useState } from 'react';
 
 function App() {
-  const [count, setCount] = useState(0);
   const [wasmMsg, setWasmMsg] = useState<string>('');
   const [sum, setSum] = useState<number | null>(null);
+  const [selectedShapeId, setSelectedShapeId] = useState<string | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -20,15 +19,39 @@ function App() {
     })();
   }, []);
 
+  const handleShapeSelect = (shapeId: string | null) => {
+    setSelectedShapeId(shapeId);
+  };
+
+  const handleGreet = async () => {
+    try {
+      await greetFromWasm('World!');
+    } catch (err) {
+      console.error('Greet failed', err);
+    }
+  };
+
   return (
-    <div className="flex flex-col items-center justify-center w-screen h-screen">
-      <Button onClick={() => setCount(count => count + 1)}>
-        count is {count}
-      </Button>
-      <div className="mt-4 text-sm text-gray-600">
-        <div>WASM: {wasmMsg || 'loading...'}</div>
-        <div>2 + 40 = {sum ?? '...'}</div>
-      </div>
+    <div className="flex flex-col w-screen h-screen bg-gray-50">
+      {/* Header */}
+      <header className="bg-white border-b border-gray-200 px-6 py-4">
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl font-bold text-gray-900">LightDraw</h1>
+          <div className="flex items-center space-x-4 text-sm text-gray-600">
+            <div>WASM: {wasmMsg || 'loading...'}</div>
+            <div>2 + 40 = {sum ?? '...'}</div>
+            <button
+              onClick={handleGreet}
+              className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+            >
+              Greet from WASM
+            </button>
+            {selectedShapeId && (
+              <div className="text-blue-600">Selected: {selectedShapeId}</div>
+            )}
+          </div>
+        </div>
+      </header>
     </div>
   );
 }

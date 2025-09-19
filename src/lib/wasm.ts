@@ -19,3 +19,8 @@ export async function addInWasm(a: number, b: number): Promise<number> {
   const mod = await loadEngine();
   return mod.add(a, b);
 }
+
+export async function greetFromWasm(name: string): Promise<void> {
+  const mod = await loadEngine();
+  return mod.greet(name);
+}
