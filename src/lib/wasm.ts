@@ -8,7 +8,6 @@ export async function loadEngine() {
       console.log('WASM module imported:', wasmModule);
       console.log('Available exports:', Object.keys(wasmModule));
 
-      // Initialize the WASM module - this sets up the runtime
       console.log('Initializing WASM module...');
       const initResult = await wasmModule.default();
       console.log('WASM module initialized, result:', initResult);
