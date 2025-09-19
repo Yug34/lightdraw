@@ -1,5 +1,7 @@
 tasks.md
 
+engine/target/debug
+
 # Logs
 logs
 *.log
