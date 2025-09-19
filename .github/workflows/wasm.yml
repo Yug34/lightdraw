@@ -29,7 +29,7 @@ jobs:
 
       - name: Build Rust project
         run: |
-          cd life && wasm-pack build
+          cd engine && wasm-pack build
 
       - name: Install node dependencies
         run: |
