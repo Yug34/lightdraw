@@ -1,21 +1,16 @@
 import { useState } from "react";
 import "./App.css";
+import { Button } from "@/components/ui/button";
 
 function App() {
   const [count, setCount] = useState(0);
 
   return (
     <>
-      <div className="text-2xl font-bold text-red-500">Vite + React</div>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p></p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+      <div className="text-2xl font-bold text-blue-500">Vite + React</div>
+      <Button onClick={() => setCount((count) => count + 1)}>
+        count is {count}
+      </Button>
     </>
   );
 }
