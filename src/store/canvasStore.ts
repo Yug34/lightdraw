@@ -42,6 +42,7 @@ export interface CanvasState {
 
   // Actions
   setViewport: (viewport: Partial<CanvasState['viewport']>) => void;
+  setViewportZoom: (zoom: number) => void;
   setCanvasSize: (size: CanvasState['canvasSize']) => void;
   addShape: (shape: Omit<Shape, 'id'>) => void;
   updateShape: (id: string, updates: Partial<Shape>) => void;
@@ -53,7 +54,6 @@ export interface CanvasState {
 }
 
 export const useCanvasStore = create<CanvasState>(set => ({
-  // Initial state
   viewport: {
     x: 0,
     y: 0,
@@ -68,10 +68,14 @@ export const useCanvasStore = create<CanvasState>(set => ({
   shapes: [],
   selectedShapeIds: [],
 
-  // Actions
   setViewport: viewport =>
     set(state => ({
       viewport: { ...state.viewport, ...viewport },
+    })),
+
+  setViewportZoom: zoom =>
+    set(state => ({
+      viewport: { ...state.viewport, zoom },
     })),
 
   setCanvasSize: canvasSize => set({ canvasSize }),

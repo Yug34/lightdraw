@@ -18,6 +18,7 @@ export const Canvas: React.FC<CanvasProps> = ({ className = '' }) => {
     shapes,
     selectedShapeIds,
     setViewport,
+    setViewportZoom,
     setCanvasSize,
     selectShape,
     clearSelection,
@@ -37,21 +38,22 @@ export const Canvas: React.FC<CanvasProps> = ({ className = '' }) => {
   }, [setCanvasSize]);
 
   useEffect(() => {
-    const preventZoom = (e: WheelEvent) => {
+    const handleZoom = (e: WheelEvent) => {
       if (e.ctrlKey) {
         e.preventDefault();
         e.stopPropagation();
-        return false;
+
+        setViewportZoom(viewport.zoom + e.deltaY / 1000);
       }
     };
 
-    document.addEventListener('wheel', preventZoom, {
+    document.addEventListener('wheel', handleZoom, {
       passive: false,
       capture: true,
     });
 
     return () => {
-      document.removeEventListener('wheel', preventZoom, { capture: true });
+      document.removeEventListener('wheel', handleZoom, { capture: true });
     };
   }, []);
 
