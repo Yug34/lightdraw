@@ -1,0 +1,125 @@
+import { create } from 'zustand';
+
+export interface Point {
+  x: number;
+  y: number;
+}
+
+export interface Shape {
+  id: string;
+  type: 'rectangle' | 'circle' | 'text';
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  fill?: string;
+  stroke?: string;
+  strokeWidth?: number;
+  text?: string;
+  fontSize?: number;
+  fontFamily?: string;
+}
+
+export interface CanvasState {
+  // Canvas viewport
+  viewport: {
+    x: number;
+    y: number;
+    zoom: number;
+  };
+
+  // Canvas dimensions
+  canvasSize: {
+    width: number;
+    height: number;
+  };
+
+  // Shapes on canvas
+  shapes: Shape[];
+
+  // Selection
+  selectedShapeIds: string[];
+
+  // Actions
+  setViewport: (viewport: Partial<CanvasState['viewport']>) => void;
+  setCanvasSize: (size: CanvasState['canvasSize']) => void;
+  addShape: (shape: Omit<Shape, 'id'>) => void;
+  updateShape: (id: string, updates: Partial<Shape>) => void;
+  deleteShape: (id: string) => void;
+  selectShape: (id: string) => void;
+  selectShapes: (ids: string[]) => void;
+  clearSelection: () => void;
+  moveShape: (id: string, deltaX: number, deltaY: number) => void;
+}
+
+export const useCanvasStore = create<CanvasState>(set => ({
+  // Initial state
+  viewport: {
+    x: 0,
+    y: 0,
+    zoom: 1,
+  },
+
+  canvasSize: {
+    width: 800,
+    height: 600,
+  },
+
+  shapes: [],
+  selectedShapeIds: [],
+
+  // Actions
+  setViewport: viewport =>
+    set(state => ({
+      viewport: { ...state.viewport, ...viewport },
+    })),
+
+  setCanvasSize: canvasSize => set({ canvasSize }),
+
+  addShape: shapeData => {
+    const id = `shape-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    const shape: Shape = {
+      id,
+      fill: '#3b82f6',
+      stroke: '#1e40af',
+      strokeWidth: 2,
+      fontSize: 16,
+      fontFamily: 'Inter, sans-serif',
+      ...shapeData,
+    };
+
+    set(state => ({
+      shapes: [...state.shapes, shape],
+    }));
+  },
+
+  updateShape: (id, updates) =>
+    set(state => ({
+      shapes: state.shapes.map(shape =>
+        shape.id === id ? { ...shape, ...updates } : shape
+      ),
+    })),
+
+  deleteShape: id =>
+    set(state => ({
+      shapes: state.shapes.filter(shape => shape.id !== id),
+      selectedShapeIds: state.selectedShapeIds.filter(
+        shapeId => shapeId !== id
+      ),
+    })),
+
+  selectShape: id => set({ selectedShapeIds: [id] }),
+
+  selectShapes: ids => set({ selectedShapeIds: ids }),
+
+  clearSelection: () => set({ selectedShapeIds: [] }),
+
+  moveShape: (id, deltaX, deltaY) =>
+    set(state => ({
+      shapes: state.shapes.map(shape =>
+        shape.id === id
+          ? { ...shape, x: shape.x + deltaX, y: shape.y + deltaY }
+          : shape
+      ),
+    })),
+}));

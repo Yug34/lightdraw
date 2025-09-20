@@ -1,3 +1,4 @@
+import { Canvas } from '@/components/Canvas';
 import { addInWasm, greetFromWasm, helloFromWasm } from '@/lib/wasm';
 import { useEffect, useState } from 'react';
 
@@ -27,13 +28,12 @@ function App() {
   };
 
   return (
-    <div className="flex flex-col w-screen h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200 px-6 py-4">
+    <div className="flex flex-col w-screen h-screen">
+      {/* <header className="bg-white border-b border-gray-200 px-6 py-4">
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-bold text-gray-900">LightDraw</h1>
           <div className="flex items-center space-x-4 text-sm text-gray-600">
-            <div>WASM aaaa: {wasmMsg || 'loading...'}</div>
+            <div>WASM: {wasmMsg || 'loading...'}</div>
             <div>2 + 40 = {sum ?? '...'}</div>
             <button
               onClick={handleGreet}
@@ -43,7 +43,11 @@ function App() {
             </button>
           </div>
         </div>
-      </header>
+      </header> */}
+
+      <main className="flex-1 relative">
+        <Canvas className="w-full h-full" />
+      </main>
     </div>
   );
 }
