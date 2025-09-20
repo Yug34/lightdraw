@@ -202,7 +202,7 @@ export const useCanvasStore = create<CanvasState>(set => ({
 
       return {
         shapes: [...state.shapes, shape],
-        toolMode: 'none', // Reset tool mode after placing shape
+        toolMode: 'none',
       };
     }),
 }));

@@ -15,19 +15,20 @@ export const Toolbar: React.FC = () => {
 
   const editModeButtons = [
     {
-      label: 'rectangle',
+      toolMode: 'rectangle',
       onClick: selectRectangleTool,
     },
     {
-      label: 'circle',
+      toolMode: 'circle',
       onClick: selectCircleTool,
     },
     {
-      label: 'text',
+      toolMode: 'text',
       onClick: selectTextTool,
     },
     {
-      label: 'select',
+      label: 'Select',
+      toolMode: 'none',
       onClick: selectNoneTool,
     },
   ];
@@ -40,11 +41,11 @@ export const Toolbar: React.FC = () => {
           {editModeButtons.map(button => (
             <Button
               onClick={button.onClick}
-              variant={toolMode === button.label ? 'default' : 'outline'}
+              variant={toolMode === button.toolMode ? 'default' : 'outline'}
               size="sm"
               className="h-8"
             >
-              {capitalize(button.label)}
+              {button.label ?? capitalize(button.toolMode)}
             </Button>
           ))}
         </div>
