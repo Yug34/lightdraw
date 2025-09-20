@@ -2,11 +2,9 @@ import { Toolbar } from '@/components/Toolbar';
 import { useCanvasStore, type Shape } from '@/store/canvasStore';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 
-interface CanvasProps {
-  className?: string;
-}
+interface CanvasProps {}
 
-export const Canvas: React.FC<CanvasProps> = ({ className = '' }) => {
+export const Canvas: React.FC<CanvasProps> = () => {
   const svgRef = useRef<SVGSVGElement>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
@@ -67,8 +65,14 @@ export const Canvas: React.FC<CanvasProps> = ({ className = '' }) => {
 
   const handleMouseDown = useCallback(
     (e: React.MouseEvent) => {
-      if (e.button === 1 || (e.button === 0 && e.metaKey)) {
-        // Middle mouse or Cmd+click
+      if (e.button === 1) {
+        // Middle mouse button
+        setIsDragging(true);
+        setDragStart({ x: e.clientX, y: e.clientY });
+        setLastPan({ x: viewport.x, y: viewport.y });
+        e.preventDefault();
+      } else if (e.button === 0 && e.metaKey) {
+        // Cmd+click
         setIsDragging(true);
         setDragStart({ x: e.clientX, y: e.clientY });
         setLastPan({ x: viewport.x, y: viewport.y });
@@ -105,10 +109,7 @@ export const Canvas: React.FC<CanvasProps> = ({ className = '' }) => {
         const deltaX = e.clientX - dragStart.x;
         const deltaY = e.clientY - dragStart.y;
 
-        setViewport({
-          x: lastPan.x - deltaX,
-          y: lastPan.y - deltaY,
-        });
+        setViewport({ x: lastPan.x - deltaX, y: lastPan.y - deltaY });
       }
     },
     [isDragging, dragStart, lastPan, setViewport]
@@ -130,15 +131,9 @@ export const Canvas: React.FC<CanvasProps> = ({ className = '' }) => {
         const deltaY = e.deltaY * panSpeed;
 
         if (e.shiftKey) {
-          setViewport({
-            x: viewport.x + deltaY,
-            y: viewport.y,
-          });
+          setViewport({ x: viewport.x + deltaY, y: viewport.y });
         } else {
-          setViewport({
-            x: viewport.x,
-            y: viewport.y + deltaY,
-          });
+          setViewport({ x: viewport.x, y: viewport.y + deltaY });
         }
       }
     },
@@ -247,7 +242,7 @@ export const Canvas: React.FC<CanvasProps> = ({ className = '' }) => {
   };
 
   return (
-    <div className={`relative overflow-hidden ${className}`}>
+    <div className={`relative overflow-hidden w-full h-full`}>
       <svg
         className="w-screen h-screen"
         ref={svgRef}
@@ -257,11 +252,6 @@ export const Canvas: React.FC<CanvasProps> = ({ className = '' }) => {
         onMouseUp={handleMouseUp}
         onWheel={handleWheel}
         style={{
-          cursor: isDragging
-            ? 'grabbing'
-            : toolMode !== 'none'
-              ? 'crosshair'
-              : 'grab',
           background: '#f8fafc',
         }}
       >
@@ -276,7 +266,7 @@ export const Canvas: React.FC<CanvasProps> = ({ className = '' }) => {
             <path
               d="M 20 0 L 0 0 0 20"
               fill="none"
-              stroke="#00ff00"
+              stroke="#000000"
               strokeWidth={0.5}
             />
           </pattern>

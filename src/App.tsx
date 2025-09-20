@@ -46,7 +46,7 @@ function App() {
       </header> */}
 
       <main className="flex-1 relative">
-        <Canvas className="w-full h-full" />
+        <Canvas />
       </main>
     </div>
   );

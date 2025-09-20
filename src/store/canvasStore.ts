@@ -23,29 +23,23 @@ export interface Shape {
 export type ToolMode = 'none' | 'rectangle' | 'circle' | 'text';
 
 export interface CanvasState {
-  // Canvas viewport
   viewport: {
     x: number;
     y: number;
     zoom: number;
   };
 
-  // Canvas dimensions
   canvasSize: {
     width: number;
     height: number;
   };
 
-  // Shapes on canvas
   shapes: Shape[];
 
-  // Selection
   selectedShapeIds: string[];
 
-  // Tool mode
   toolMode: ToolMode;
 
-  // Actions
   setViewport: (viewport: Partial<CanvasState['viewport']>) => void;
   setViewportZoom: (zoom: number) => void;
   setCanvasSize: (size: CanvasState['canvasSize']) => void;
@@ -150,8 +144,8 @@ export const useCanvasStore = create<CanvasState>(set => ({
         case 'rectangle':
           shapeData = {
             type: 'rectangle',
-            x: x - 60, // Center the rectangle on the click point
-            y: y - 40,
+            x: x - 120 / 2, // Center the rectangle on the click point
+            y: y - 80 / 2,
             width: 120,
             height: 80,
             fill: '#3b82f6',
@@ -162,8 +156,8 @@ export const useCanvasStore = create<CanvasState>(set => ({
         case 'circle':
           shapeData = {
             type: 'circle',
-            x: x - 50, // Center the circle on the click point
-            y: y - 50,
+            x: x - 100 / 2, // Center the circle on the click point
+            y: y - 100 / 2,
             width: 100,
             height: 100,
             fill: '#10b981',
@@ -174,8 +168,8 @@ export const useCanvasStore = create<CanvasState>(set => ({
         case 'text':
           shapeData = {
             type: 'text',
-            x: x - 75, // Center the text on the click point
-            y: y - 20,
+            x: x - 150 / 2, // Center the text on the click point
+            y: y - 40 / 2,
             width: 150,
             height: 40,
             fill: '#374151',
