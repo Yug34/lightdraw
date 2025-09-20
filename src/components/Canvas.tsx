@@ -75,13 +75,19 @@ export const Canvas: React.FC<CanvasProps> = ({ className = '' }) => {
       } else if (e.button === 0) {
         // Left click
         if (toolMode !== 'none') {
-          // Convert screen coordinates to canvas coordinates
+          // Convert screen coordinates to world coordinates (stored in shape data)
           const rect = svgRef.current?.getBoundingClientRect();
           if (rect) {
-            const canvasX =
-              (e.clientX - rect.left) / viewport.zoom + viewport.x;
-            const canvasY = (e.clientY - rect.top) / viewport.zoom + viewport.y;
-            placeShapeAtPosition(canvasX, canvasY);
+            const screenX = e.clientX - rect.left;
+            const screenY = e.clientY - rect.top;
+
+            // Convert to world coordinates by accounting for viewport offset and zoom
+            const worldX =
+              (screenX - viewport.x * viewport.zoom) / viewport.zoom;
+            const worldY =
+              (screenY - viewport.y * viewport.zoom) / viewport.zoom;
+
+            placeShapeAtPosition(worldX, worldY);
           }
         } else {
           clearSelection();
@@ -138,7 +144,7 @@ export const Canvas: React.FC<CanvasProps> = ({ className = '' }) => {
   );
 
   const handleShapeClick = useCallback(
-    (e: React.MouseEvent, shapeId: string) => {
+    (e: React.MouseEvent, shapeId: string, shapeType: Shape['type']) => {
       e.stopPropagation();
       selectShape(shapeId);
     },
@@ -148,7 +154,8 @@ export const Canvas: React.FC<CanvasProps> = ({ className = '' }) => {
   const renderShape = (shape: Shape) => {
     const isSelected = selectedShapeIds.includes(shape.id);
     const commonProps = {
-      onClick: (e: React.MouseEvent) => handleShapeClick(e, shape.id),
+      onClick: (e: React.MouseEvent) =>
+        handleShapeClick(e, shape.id, shape.type),
       style: {
         cursor: 'pointer',
         filter: isSelected
@@ -157,33 +164,41 @@ export const Canvas: React.FC<CanvasProps> = ({ className = '' }) => {
       },
     };
 
+    // Apply zoom scaling to shape coordinates and dimensions
+    const scaledX = shape.x * viewport.zoom;
+    const scaledY = shape.y * viewport.zoom;
+    const scaledWidth = shape.width * viewport.zoom;
+    const scaledHeight = shape.height * viewport.zoom;
+    const scaledStrokeWidth = (shape.strokeWidth || 2) * viewport.zoom;
+    const scaledFontSize = (shape.fontSize || 16) * viewport.zoom;
+
     switch (shape.type) {
       case 'rectangle':
         return (
           <rect
             key={shape.id}
-            x={shape.x}
-            y={shape.y}
-            width={shape.width}
-            height={shape.height}
+            x={scaledX}
+            y={scaledY}
+            width={scaledWidth}
+            height={scaledHeight}
             fill={shape.fill}
             stroke={shape.stroke}
-            strokeWidth={shape.strokeWidth}
+            strokeWidth={scaledStrokeWidth}
             {...commonProps}
           />
         );
 
       case 'circle':
-        const radius = Math.min(shape.width, shape.height) / 2;
+        const scaledRadius = Math.min(scaledWidth, scaledHeight) / 2;
         return (
           <circle
             key={shape.id}
-            cx={shape.x + radius}
-            cy={shape.y + radius}
-            r={radius}
+            cx={scaledX + scaledRadius}
+            cy={scaledY + scaledRadius}
+            r={scaledRadius}
             fill={shape.fill}
             stroke={shape.stroke}
-            strokeWidth={shape.strokeWidth}
+            strokeWidth={scaledStrokeWidth}
             {...commonProps}
           />
         );
@@ -192,19 +207,19 @@ export const Canvas: React.FC<CanvasProps> = ({ className = '' }) => {
         return (
           <g key={shape.id} {...commonProps}>
             <rect
-              x={shape.x}
-              y={shape.y}
-              width={shape.width}
-              height={shape.height}
+              x={scaledX}
+              y={scaledY}
+              width={scaledWidth}
+              height={scaledHeight}
               fill="transparent"
               stroke={isSelected ? shape.stroke : 'transparent'}
-              strokeWidth={shape.strokeWidth}
+              strokeWidth={scaledStrokeWidth}
               strokeDasharray={isSelected ? '5,5' : 'none'}
             />
             <text
-              x={shape.x + 8}
-              y={shape.y + shape.height / 2 + 4}
-              fontSize={shape.fontSize}
+              x={scaledX + 8 * viewport.zoom}
+              y={scaledY + scaledHeight / 2 + 4 * viewport.zoom}
+              fontSize={scaledFontSize}
               fontFamily={shape.fontFamily}
               fill={shape.fill}
               dominantBaseline="middle"
