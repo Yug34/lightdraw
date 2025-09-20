@@ -83,10 +83,8 @@ export const Canvas: React.FC<CanvasProps> = ({ className = '' }) => {
             const screenY = e.clientY - rect.top;
 
             // Convert to world coordinates by accounting for viewport offset and zoom
-            const worldX =
-              (screenX - viewport.x * viewport.zoom) / viewport.zoom;
-            const worldY =
-              (screenY - viewport.y * viewport.zoom) / viewport.zoom;
+            const worldX = viewport.x + screenX / viewport.zoom;
+            const worldY = viewport.y + screenY / viewport.zoom;
 
             placeShapeAtPosition(worldX, worldY);
           }
@@ -178,41 +176,41 @@ export const Canvas: React.FC<CanvasProps> = ({ className = '' }) => {
       },
     };
 
-    // Apply zoom scaling to shape coordinates and dimensions
-    const scaledX = shape.x * viewport.zoom;
-    const scaledY = shape.y * viewport.zoom;
-    const scaledWidth = shape.width * viewport.zoom;
-    const scaledHeight = shape.height * viewport.zoom;
-    const scaledStrokeWidth = (shape.strokeWidth || 2) * viewport.zoom;
-    const scaledFontSize = (shape.fontSize || 16) * viewport.zoom;
+    // Use world coordinates directly (viewBox handles zoom scaling)
+    const worldX = shape.x;
+    const worldY = shape.y;
+    const worldWidth = shape.width;
+    const worldHeight = shape.height;
+    const worldStrokeWidth = shape.strokeWidth || 2;
+    const worldFontSize = shape.fontSize || 16;
 
     switch (shape.type) {
       case 'rectangle':
         return (
           <rect
             key={shape.id}
-            x={scaledX}
-            y={scaledY}
-            width={scaledWidth}
-            height={scaledHeight}
+            x={worldX}
+            y={worldY}
+            width={worldWidth}
+            height={worldHeight}
             fill={shape.fill}
             stroke={shape.stroke}
-            strokeWidth={scaledStrokeWidth}
+            strokeWidth={worldStrokeWidth}
             {...commonProps}
           />
         );
 
       case 'circle':
-        const scaledRadius = Math.min(scaledWidth, scaledHeight) / 2;
+        const worldRadius = Math.min(worldWidth, worldHeight) / 2;
         return (
           <circle
             key={shape.id}
-            cx={scaledX + scaledRadius}
-            cy={scaledY + scaledRadius}
-            r={scaledRadius}
+            cx={worldX + worldRadius}
+            cy={worldY + worldRadius}
+            r={worldRadius}
             fill={shape.fill}
             stroke={shape.stroke}
-            strokeWidth={scaledStrokeWidth}
+            strokeWidth={worldStrokeWidth}
             {...commonProps}
           />
         );
@@ -221,19 +219,19 @@ export const Canvas: React.FC<CanvasProps> = ({ className = '' }) => {
         return (
           <g key={shape.id} {...commonProps}>
             <rect
-              x={scaledX}
-              y={scaledY}
-              width={scaledWidth}
-              height={scaledHeight}
+              x={worldX}
+              y={worldY}
+              width={worldWidth}
+              height={worldHeight}
               fill="transparent"
               stroke={isSelected ? shape.stroke : 'transparent'}
-              strokeWidth={scaledStrokeWidth}
+              strokeWidth={worldStrokeWidth}
               strokeDasharray={isSelected ? '5,5' : 'none'}
             />
             <text
-              x={scaledX + 8 * viewport.zoom}
-              y={scaledY + scaledHeight / 2 + 4 * viewport.zoom}
-              fontSize={scaledFontSize}
+              x={worldX + 8}
+              y={worldY + worldHeight / 2 + 4}
+              fontSize={worldFontSize}
               fontFamily={shape.fontFamily}
               fill={shape.fill}
               dominantBaseline="middle"
@@ -271,12 +269,12 @@ export const Canvas: React.FC<CanvasProps> = ({ className = '' }) => {
         <defs>
           <pattern
             id="grid"
-            width={20 * viewport.zoom}
-            height={20 * viewport.zoom}
+            width={20}
+            height={20}
             patternUnits="userSpaceOnUse"
           >
             <path
-              d={`M ${20 * viewport.zoom} 0 L 0 0 0 ${20 * viewport.zoom}`}
+              d="M 20 0 L 0 0 0 20"
               fill="none"
               stroke="#00ff00"
               strokeWidth={0.5}
