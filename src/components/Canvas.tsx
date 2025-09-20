@@ -16,6 +16,7 @@ export const Canvas: React.FC<CanvasProps> = () => {
     shapes,
     selectedShapeIds,
     toolMode,
+    isSaving,
     setViewport,
     setViewportZoom,
     setCanvasSize,
@@ -23,7 +24,13 @@ export const Canvas: React.FC<CanvasProps> = () => {
     selectShapes,
     clearSelection,
     placeShapeAtPosition,
+    loadPersistedState,
   } = useCanvasStore();
+
+  useEffect(() => {
+    // Load persisted state on mount
+    loadPersistedState();
+  }, [loadPersistedState]);
 
   useEffect(() => {
     const updateCanvasSize = () => {
@@ -288,6 +295,9 @@ export const Canvas: React.FC<CanvasProps> = () => {
             ? 'Select'
             : toolMode.charAt(0).toUpperCase() + toolMode.slice(1)}
         </div>
+        {isSaving && (
+          <div className="text-blue-600 text-xs mt-1">Saving...</div>
+        )}
       </div>
     </div>
   );

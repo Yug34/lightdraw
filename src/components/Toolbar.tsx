@@ -4,14 +4,31 @@ import { useCanvasStore } from '@/store/canvasStore';
 import React from 'react';
 
 export const Toolbar: React.FC = () => {
-  const { shapes, deleteShape, selectedShapeIds, toolMode, setToolMode } =
-    useCanvasStore();
+  const {
+    shapes,
+    deleteShape,
+    selectedShapeIds,
+    toolMode,
+    setToolMode,
+    clearPersistedState,
+    savePersistedState,
+  } = useCanvasStore();
 
   const selectRectangleTool = () => setToolMode('rectangle');
   const selectCircleTool = () => setToolMode('circle');
   const selectTextTool = () => setToolMode('text');
   const selectNoneTool = () => setToolMode('none');
   const deleteSelected = () => selectedShapeIds.forEach(id => deleteShape(id));
+  const handleClearAll = () => {
+    if (
+      confirm(
+        'Are you sure you want to clear all shapes? This cannot be undone.'
+      )
+    ) {
+      clearPersistedState();
+    }
+  };
+  const handleSaveNow = () => savePersistedState();
 
   const editModeButtons = [
     {
@@ -40,6 +57,7 @@ export const Toolbar: React.FC = () => {
           <span className="text-sm font-medium text-gray-700">Shapes:</span>
           {editModeButtons.map(button => (
             <Button
+              key={button.toolMode}
               onClick={button.onClick}
               variant={toolMode === button.toolMode ? 'default' : 'outline'}
               size="sm"
@@ -62,6 +80,22 @@ export const Toolbar: React.FC = () => {
             disabled={selectedShapeIds.length === 0}
           >
             Delete ({selectedShapeIds.length})
+          </Button>
+          <Button
+            onClick={handleSaveNow}
+            variant="outline"
+            size="sm"
+            className="h-8"
+          >
+            Save Now
+          </Button>
+          <Button
+            onClick={handleClearAll}
+            variant="outline"
+            size="sm"
+            className="h-8 text-red-600 hover:text-red-700 hover:bg-red-50"
+          >
+            Clear All
           </Button>
         </div>
 
