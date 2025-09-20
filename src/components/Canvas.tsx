@@ -43,7 +43,12 @@ export const Canvas: React.FC<CanvasProps> = ({ className = '' }) => {
         e.preventDefault();
         e.stopPropagation();
 
-        setViewportZoom(viewport.zoom + e.deltaY / 1000);
+        const newZoom = Math.max(
+          0.5,
+          Math.min(2, viewport.zoom - e.deltaY / 1000)
+        );
+
+        setViewportZoom(newZoom);
       }
     };
 
@@ -55,7 +60,7 @@ export const Canvas: React.FC<CanvasProps> = ({ className = '' }) => {
     return () => {
       document.removeEventListener('wheel', handleZoom, { capture: true });
     };
-  }, []);
+  }, [viewport]);
 
   const handleMouseDown = useCallback(
     (e: React.MouseEvent) => {
@@ -97,26 +102,7 @@ export const Canvas: React.FC<CanvasProps> = ({ className = '' }) => {
       e.stopPropagation();
 
       if (e.ctrlKey) {
-        const zoomFactor = e.deltaY > 0 ? 0.9 : 1.1;
-        const newZoom = Math.max(0.1, Math.min(5, viewport.zoom * zoomFactor));
-
-        console.log('zooming');
-        debugger;
-
-        const rect = svgRef.current?.getBoundingClientRect();
-        if (rect) {
-          const mouseX = e.clientX - rect.left;
-          const mouseY = e.clientY - rect.top;
-
-          const worldX = (mouseX - viewport.x) / viewport.zoom;
-          const worldY = (mouseY - viewport.y) / viewport.zoom;
-
-          setViewport({
-            zoom: newZoom,
-            x: mouseX - worldX * newZoom,
-            y: mouseY - worldY * newZoom,
-          });
-        }
+        return;
       } else {
         const panSpeed = 0.3;
         const deltaY = e.deltaY * panSpeed;
