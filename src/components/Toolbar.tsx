@@ -11,7 +11,6 @@ export const Toolbar: React.FC = () => {
     toolMode,
     setToolMode,
     clearPersistedState,
-    savePersistedState,
   } = useCanvasStore();
 
   const selectRectangleTool = () => setToolMode('rectangle');
@@ -28,7 +27,6 @@ export const Toolbar: React.FC = () => {
       clearPersistedState();
     }
   };
-  const handleSaveNow = () => savePersistedState();
 
   const editModeButtons = [
     {
@@ -80,14 +78,6 @@ export const Toolbar: React.FC = () => {
             disabled={selectedShapeIds.length === 0}
           >
             Delete ({selectedShapeIds.length})
-          </Button>
-          <Button
-            onClick={handleSaveNow}
-            variant="outline"
-            size="sm"
-            className="h-8"
-          >
-            Save Now
           </Button>
           <Button
             onClick={handleClearAll}
