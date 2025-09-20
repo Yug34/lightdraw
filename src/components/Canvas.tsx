@@ -17,11 +17,13 @@ export const Canvas: React.FC<CanvasProps> = ({ className = '' }) => {
     canvasSize,
     shapes,
     selectedShapeIds,
+    toolMode,
     setViewport,
     setViewportZoom,
     setCanvasSize,
     selectShape,
     clearSelection,
+    placeShapeAtPosition,
   } = useCanvasStore();
 
   useEffect(() => {
@@ -71,10 +73,22 @@ export const Canvas: React.FC<CanvasProps> = ({ className = '' }) => {
         setLastPan({ x: viewport.x, y: viewport.y });
         e.preventDefault();
       } else if (e.button === 0) {
-        clearSelection();
+        // Left click
+        if (toolMode !== 'none') {
+          // Convert screen coordinates to canvas coordinates
+          const rect = svgRef.current?.getBoundingClientRect();
+          if (rect) {
+            const canvasX =
+              (e.clientX - rect.left) / viewport.zoom + viewport.x;
+            const canvasY = (e.clientY - rect.top) / viewport.zoom + viewport.y;
+            placeShapeAtPosition(canvasX, canvasY);
+          }
+        } else {
+          clearSelection();
+        }
       }
     },
-    [viewport.x, viewport.y, clearSelection]
+    [viewport, toolMode, clearSelection, placeShapeAtPosition]
   );
 
   const handleMouseMove = useCallback(
@@ -216,7 +230,11 @@ export const Canvas: React.FC<CanvasProps> = ({ className = '' }) => {
         onMouseUp={handleMouseUp}
         onWheel={handleWheel}
         style={{
-          cursor: isDragging ? 'grabbing' : 'grab',
+          cursor: isDragging
+            ? 'grabbing'
+            : toolMode !== 'none'
+              ? 'crosshair'
+              : 'grab',
           background: '#f8fafc',
         }}
       >
@@ -247,6 +265,12 @@ export const Canvas: React.FC<CanvasProps> = ({ className = '' }) => {
         <div>Zoom: {Math.round(viewport.zoom * 100)}%</div>
         <div>Shapes: {shapes.length}</div>
         <div>Selected: {selectedShapeIds.length}</div>
+        <div>
+          Tool:{' '}
+          {toolMode === 'none'
+            ? 'Select'
+            : toolMode.charAt(0).toUpperCase() + toolMode.slice(1)}
+        </div>
       </div>
     </div>
   );
