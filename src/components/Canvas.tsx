@@ -22,6 +22,7 @@ export const Canvas: React.FC<CanvasProps> = ({ className = '' }) => {
     setViewportZoom,
     setCanvasSize,
     selectShape,
+    selectShapes,
     clearSelection,
     placeShapeAtPosition,
   } = useCanvasStore();
@@ -90,7 +91,10 @@ export const Canvas: React.FC<CanvasProps> = ({ className = '' }) => {
             placeShapeAtPosition(worldX, worldY);
           }
         } else {
-          clearSelection();
+          // Only clear selection if not holding Ctrl/Cmd (for multi-selection)
+          if (!e.ctrlKey && !e.metaKey) {
+            clearSelection();
+          }
         }
       }
     },
@@ -144,18 +148,28 @@ export const Canvas: React.FC<CanvasProps> = ({ className = '' }) => {
   );
 
   const handleShapeClick = useCallback(
-    (e: React.MouseEvent, shapeId: string, shapeType: Shape['type']) => {
+    (e: React.MouseEvent, shapeId: string) => {
       e.stopPropagation();
-      selectShape(shapeId);
+
+      // multi select
+      if (e.ctrlKey || e.metaKey) {
+        if (selectedShapeIds.includes(shapeId)) {
+          const newSelection = selectedShapeIds.filter(id => id !== shapeId);
+          selectShapes(newSelection);
+        } else {
+          selectShapes([...selectedShapeIds, shapeId]);
+        }
+      } else {
+        selectShape(shapeId);
+      }
     },
-    [selectShape]
+    [selectShape, selectShapes, selectedShapeIds]
   );
 
   const renderShape = (shape: Shape) => {
     const isSelected = selectedShapeIds.includes(shape.id);
     const commonProps = {
-      onClick: (e: React.MouseEvent) =>
-        handleShapeClick(e, shape.id, shape.type),
+      onClick: (e: React.MouseEvent) => handleShapeClick(e, shape.id),
       style: {
         cursor: 'pointer',
         filter: isSelected
