@@ -1,4 +1,5 @@
 import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
 import { capitalize } from '@/lib/utils';
 import { useCanvasStore } from '@/store/canvasStore';
 import React from 'react';
@@ -66,7 +67,7 @@ export const Toolbar: React.FC = () => {
           ))}
         </div>
 
-        <div className="h-6 w-px bg-gray-300" />
+        <Separator orientation="vertical" className="h-6" />
 
         <div className="flex items-center space-x-2">
           <span className="text-sm font-medium text-gray-700">Actions:</span>
@@ -89,7 +90,7 @@ export const Toolbar: React.FC = () => {
           </Button>
         </div>
 
-        <div className="h-6 w-px bg-gray-300" />
+        <Separator orientation="vertical" className="h-6" />
 
         <div className="text-sm text-gray-500">
           Total shapes: {shapes.length}
