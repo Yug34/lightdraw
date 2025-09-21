@@ -55,7 +55,6 @@ export const Canvas: React.FC<CanvasProps> = () => {
           background: '#f8fafc',
         }}
       >
-        {/* Grid background */}
         <GridBackground />
         <rect width="100%" height="100%" fill="url(#grid)" />
 
