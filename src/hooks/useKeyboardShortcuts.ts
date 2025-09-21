@@ -38,13 +38,8 @@ export const useKeyboardShortcuts = (shortcuts: KeyboardShortcut[]) => {
 
 // Predefined shortcuts for canvas operations
 export const useCanvasKeyboardShortcuts = () => {
-  const {
-    selectedShapeIds,
-    deleteShape,
-    toolMode,
-    setToolMode,
-    clearToolMode,
-  } = useCanvasStore();
+  const { selectedShapeIds, deleteShape, setToolMode, clearToolMode } =
+    useCanvasStore();
 
   const shortcuts: KeyboardShortcut[] = [
     {
