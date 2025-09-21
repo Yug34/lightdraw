@@ -151,15 +151,15 @@ export const useCanvas = (options: UseCanvasOptions = {}) => {
         const deltaY = e.deltaY * panSpeed;
         const deltaX = e.deltaX * panSpeed;
 
-        // Handle touchpad scrolling (both horizontal and vertical)
-        if (Math.abs(e.deltaX) > 0 || Math.abs(e.deltaY) > 0) {
+        // Handle Shift+mousewheel for horizontal panning (keyboard modifier)
+        if (e.shiftKey) {
+          // Shift+vertical scroll for horizontal panning
+          setViewport({ x: viewport.x + deltaY, y: viewport.y });
+        } else if (Math.abs(e.deltaX) > 0 || Math.abs(e.deltaY) > 0) {
           // Touchpad gesture detected - handle both horizontal and vertical movement
           const newX = viewport.x + deltaX;
           const newY = viewport.y + deltaY;
           setViewport({ x: newX, y: newY });
-        } else if (e.shiftKey) {
-          // Shift+vertical scroll for horizontal panning (keyboard modifier)
-          setViewport({ x: viewport.x + deltaY, y: viewport.y });
         } else {
           // Regular vertical scrolling (fallback for mouse wheel)
           setViewport({ x: viewport.x, y: viewport.y + deltaY });
