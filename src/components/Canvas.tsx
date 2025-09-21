@@ -56,7 +56,13 @@ export const Canvas: React.FC<CanvasProps> = () => {
         }}
       >
         <GridBackground />
-        <rect width="100%" height="100%" fill="url(#grid)" />
+        <rect
+          x={viewport.x - canvasSize.width}
+          y={viewport.y - canvasSize.height}
+          width={canvasSize.width * 3}
+          height={canvasSize.height * 3}
+          fill="url(#grid)"
+        />
 
         {shapes.map(renderShape)}
       </svg>
