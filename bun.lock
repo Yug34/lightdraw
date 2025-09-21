@@ -10,7 +10,7 @@
         "@tailwindcss/vite": "^4.1.13",
         "class-variance-authority": "^0.7.1",
         "clsx": "^2.1.1",
-        "engine": "file:./engine/pkg",
+        "engine": "file:./engine/engine/pkg",
         "lucide-react": "^0.544.0",
         "react": "^19.1.1",
         "react-dom": "^19.1.1",
@@ -372,7 +372,7 @@
 
     "emoji-regex": ["emoji-regex@10.5.0", "", {}, "sha512-lb49vf1Xzfx080OKA0o6l8DQQpV+6Vg95zyCJX9VB/BqKYlhG7N4wgROUUHRA+ZPUefLnteQOad7z1kT2bV7bg=="],
 
-    "engine": ["engine@file:engine/pkg", {}],
+    "engine": ["engine@file:engine/engine/pkg", {}],
 
     "enhanced-resolve": ["enhanced-resolve@5.18.3", "", { "dependencies": { "graceful-fs": "^4.2.4", "tapable": "^2.2.0" } }, "sha512-d4lC8xfavMeBjzGr2vECC3fsGXziXZQyJxD868h2M/mBI3PwAuODxAkLkq5HYuvrPYcUtiLzsTo8U3PgX3Ocww=="],
 

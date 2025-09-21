@@ -48,12 +48,11 @@ export const useCanvas = (options: UseCanvasOptions = {}) => {
     return () => window.removeEventListener('resize', updateCanvasSize);
   }, [setCanvasSize]);
 
-  // Handle zoom with Ctrl+wheel
+  // Handle zoom and pan with wheel events
   useEffect(() => {
-    if (!enableZoom) return;
-
-    const handleZoom = (e: WheelEvent) => {
-      if (e.ctrlKey) {
+    const handleWheel = (e: WheelEvent) => {
+      if (e.ctrlKey && enableZoom) {
+        // Handle zoom with Ctrl+wheel
         e.preventDefault();
         e.stopPropagation();
 
@@ -63,18 +62,40 @@ export const useCanvas = (options: UseCanvasOptions = {}) => {
         );
 
         setViewportZoom(newZoom);
+      } else if (enablePan) {
+        // Handle pan with wheel
+        e.preventDefault();
+        e.stopPropagation();
+
+        const panSpeed = 0.3;
+        const deltaY = e.deltaY * panSpeed;
+        const deltaX = e.deltaX * panSpeed;
+
+        // Handle Shift+mousewheel for horizontal panning (keyboard modifier)
+        if (e.shiftKey) {
+          // Shift+vertical scroll for horizontal panning
+          setViewport({ x: viewport.x + deltaY, y: viewport.y });
+        } else if (Math.abs(e.deltaX) > 0 || Math.abs(e.deltaY) > 0) {
+          // Touchpad gesture detected - handle both horizontal and vertical movement
+          const newX = viewport.x + deltaX;
+          const newY = viewport.y + deltaY;
+          setViewport({ x: newX, y: newY });
+        } else {
+          // Regular vertical scrolling (fallback for mouse wheel)
+          setViewport({ x: viewport.x, y: viewport.y + deltaY });
+        }
       }
     };
 
-    document.addEventListener('wheel', handleZoom, {
+    document.addEventListener('wheel', handleWheel, {
       passive: false,
       capture: true,
     });
 
     return () => {
-      document.removeEventListener('wheel', handleZoom, { capture: true });
+      document.removeEventListener('wheel', handleWheel, { capture: true });
     };
-  }, [viewport, enableZoom, setViewportZoom]);
+  }, [viewport, enableZoom, enablePan, setViewportZoom, setViewport]);
 
   const handleMouseDown = useCallback(
     (e: React.MouseEvent) => {
@@ -139,36 +160,6 @@ export const useCanvas = (options: UseCanvasOptions = {}) => {
     setIsDragging(false);
   }, []);
 
-  const handleWheel = useCallback(
-    (e: React.WheelEvent) => {
-      e.preventDefault();
-      e.stopPropagation();
-
-      if (e.ctrlKey) {
-        return;
-      } else if (enablePan) {
-        const panSpeed = 0.3;
-        const deltaY = e.deltaY * panSpeed;
-        const deltaX = e.deltaX * panSpeed;
-
-        // Handle Shift+mousewheel for horizontal panning (keyboard modifier)
-        if (e.shiftKey) {
-          // Shift+vertical scroll for horizontal panning
-          setViewport({ x: viewport.x + deltaY, y: viewport.y });
-        } else if (Math.abs(e.deltaX) > 0 || Math.abs(e.deltaY) > 0) {
-          // Touchpad gesture detected - handle both horizontal and vertical movement
-          const newX = viewport.x + deltaX;
-          const newY = viewport.y + deltaY;
-          setViewport({ x: newX, y: newY });
-        } else {
-          // Regular vertical scrolling (fallback for mouse wheel)
-          setViewport({ x: viewport.x, y: viewport.y + deltaY });
-        }
-      }
-    },
-    [viewport, enablePan, setViewport]
-  );
-
   const handleShapeClick = useCallback(
     (e: React.MouseEvent, shapeId: string) => {
       if (!enableSelection) return;
@@ -201,7 +192,6 @@ export const useCanvas = (options: UseCanvasOptions = {}) => {
     handleMouseDown,
     handleMouseMove,
     handleMouseUp,
-    handleWheel,
     handleShapeClick,
   };
 };

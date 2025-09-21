@@ -18,7 +18,6 @@ export const Canvas: React.FC<CanvasProps> = () => {
     handleMouseDown,
     handleMouseMove,
     handleMouseUp,
-    handleWheel,
     handleShapeClick,
   } = useCanvas();
 
@@ -50,7 +49,6 @@ export const Canvas: React.FC<CanvasProps> = () => {
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
-        onWheel={handleWheel}
         style={{
           background: '#f8fafc',
         }}
