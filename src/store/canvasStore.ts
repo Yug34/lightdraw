@@ -22,7 +22,25 @@ export interface Shape {
   fontFamily?: string;
 }
 
-export type ToolMode = 'none' | 'rectangle' | 'circle' | 'text';
+export interface Connector {
+  id: string;
+  type: 'arrow';
+  x: number;
+  y: number;
+  targetX: number;
+  targetY: number;
+  fill?: string;
+  stroke?: string;
+  strokeWidth?: number;
+}
+
+export interface Entity {
+  id: string;
+  type: 'shape' | 'connector';
+  entityData: Shape | Connector;
+}
+
+export type ToolMode = 'none' | 'rectangle' | 'circle' | 'text' | 'arrow';
 
 export interface CanvasState {
   viewport: {
@@ -37,8 +55,9 @@ export interface CanvasState {
   };
 
   shapes: Shape[];
+  connectors: Connector[];
 
-  selectedShapeIds: string[];
+  selectedEntityIds: string[];
 
   toolMode: ToolMode;
 
@@ -46,6 +65,7 @@ export interface CanvasState {
   setViewportZoom: (zoom: number) => void;
   setCanvasSize: (size: CanvasState['canvasSize']) => void;
   addShape: (shape: Omit<Shape, 'id'>) => void;
+  addConnector: (connector: Omit<Connector, 'id'>) => void;
   updateShape: (id: string, updates: Partial<Shape>) => void;
   deleteShape: (id: string) => void;
   selectShape: (id: string) => void;
@@ -55,6 +75,12 @@ export interface CanvasState {
   setToolMode: (mode: ToolMode) => void;
   clearToolMode: () => void;
   placeShapeAtPosition: (x: number, y: number) => void;
+  placeConnectorAtPosition: (
+    x: number,
+    y: number,
+    targetX: number,
+    targetY: number
+  ) => void;
   loadPersistedState: () => Promise<void>;
   savePersistedState: () => Promise<void>;
   clearPersistedState: () => Promise<void>;
@@ -75,7 +101,8 @@ export const useCanvasStore = create<CanvasState>()(
     },
 
     shapes: [],
-    selectedShapeIds: [],
+    connectors: [],
+    selectedEntityIds: [],
     toolMode: 'none',
     isSaving: false,
 
@@ -108,6 +135,20 @@ export const useCanvasStore = create<CanvasState>()(
       }));
     },
 
+    addConnector: connectorData => {
+      const id = `connector-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      const connector: Connector = {
+        id,
+        fill: '#000000',
+        stroke: '#000000',
+        strokeWidth: 2,
+        ...connectorData,
+      };
+      set(state => ({
+        connectors: [...state.connectors, connector],
+      }));
+    },
+
     updateShape: (id, updates) =>
       set(state => ({
         shapes: state.shapes.map(shape =>
@@ -118,16 +159,16 @@ export const useCanvasStore = create<CanvasState>()(
     deleteShape: id =>
       set(state => ({
         shapes: state.shapes.filter(shape => shape.id !== id),
-        selectedShapeIds: state.selectedShapeIds.filter(
-          shapeId => shapeId !== id
+        selectedEntityIds: state.selectedEntityIds.filter(
+          entityId => entityId !== id
         ),
       })),
 
-    selectShape: id => set({ selectedShapeIds: [id] }),
+    selectShape: id => set({ selectedEntityIds: [id] }),
 
-    selectShapes: ids => set({ selectedShapeIds: ids }),
+    selectShapes: ids => set({ selectedEntityIds: ids }),
 
-    clearSelection: () => set({ selectedShapeIds: [] }),
+    clearSelection: () => set({ selectedEntityIds: [] }),
 
     moveShape: (id, deltaX, deltaY) =>
       set(state => ({
@@ -208,6 +249,25 @@ export const useCanvasStore = create<CanvasState>()(
         };
       }),
 
+    placeConnectorAtPosition: (x, y, targetX, targetY) => {
+      const id = `connector-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      const connector: Connector = {
+        id,
+        x,
+        y,
+        targetX,
+        targetY,
+        type: 'arrow',
+        fill: '#000000',
+        stroke: '#000000',
+        strokeWidth: 2,
+      };
+
+      set(state => ({
+        connectors: [...state.connectors, connector],
+      }));
+    },
+
     loadPersistedState: async () => {
       try {
         await persistenceService.init();
@@ -246,7 +306,7 @@ export const useCanvasStore = create<CanvasState>()(
         await persistenceService.clearCanvasState();
         set({
           shapes: [],
-          selectedShapeIds: [],
+          selectedEntityIds: [],
           viewport: { x: 0, y: 0, zoom: 1 },
         });
       } catch (error) {

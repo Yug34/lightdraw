@@ -1,19 +1,21 @@
-import { type Shape } from '@/store/canvasStore';
+import type { Connector, Shape } from '@/store/canvasStore';
 import React from 'react';
 
 interface ShapeRendererProps {
-  shape: Shape;
+  entity: Shape | Connector;
   isSelected: boolean;
   onClick: (e: React.MouseEvent, shapeId: string) => void;
+  type: 'shape' | 'connector';
 }
 
 export const ShapeRenderer: React.FC<ShapeRendererProps> = ({
-  shape,
+  entity,
   isSelected,
   onClick,
+  type,
 }) => {
   const commonProps = {
-    onClick: (e: React.MouseEvent) => onClick(e, shape.id),
+    onClick: (e: React.MouseEvent) => onClick(e, entity.id),
     style: {
       cursor: 'pointer',
       filter: isSelected
@@ -22,72 +24,89 @@ export const ShapeRenderer: React.FC<ShapeRendererProps> = ({
     },
   };
 
-  // Use world coordinates directly (viewBox handles zoom scaling)
-  const worldX = shape.x;
-  const worldY = shape.y;
-  const worldWidth = shape.width;
-  const worldHeight = shape.height;
-  const worldStrokeWidth = shape.strokeWidth || 2;
-  const worldFontSize = shape.fontSize || 16;
+  const worldX = entity.x;
+  const worldY = entity.y;
+  const worldStrokeWidth = entity.strokeWidth || 2;
 
-  switch (shape.type) {
-    case 'rectangle':
-      return (
-        <rect
-          key={shape.id}
-          x={worldX}
-          y={worldY}
-          width={worldWidth}
-          height={worldHeight}
-          fill={shape.fill}
-          stroke={shape.stroke}
-          strokeWidth={worldStrokeWidth}
-          {...commonProps}
-        />
-      );
+  if (type === 'shape') {
+    const shape = entity as Shape;
+    const worldWidth = shape.width;
+    const worldHeight = shape.height;
+    const worldFontSize = shape.fontSize || 16;
 
-    case 'circle':
-      const worldRadius = Math.min(worldWidth, worldHeight) / 2;
-      return (
-        <circle
-          key={shape.id}
-          cx={worldX + worldRadius}
-          cy={worldY + worldRadius}
-          r={worldRadius}
-          fill={shape.fill}
-          stroke={shape.stroke}
-          strokeWidth={worldStrokeWidth}
-          {...commonProps}
-        />
-      );
-
-    case 'text':
-      return (
-        <g key={shape.id} {...commonProps}>
+    switch (shape.type) {
+      case 'rectangle':
+        return (
           <rect
+            key={shape.id}
             x={worldX}
             y={worldY}
             width={worldWidth}
             height={worldHeight}
-            fill="transparent"
-            stroke={isSelected ? shape.stroke : 'transparent'}
-            strokeWidth={worldStrokeWidth}
-            strokeDasharray={isSelected ? '5,5' : 'none'}
-          />
-          <text
-            x={worldX + 8}
-            y={worldY + worldHeight / 2 + 4}
-            fontSize={worldFontSize}
-            fontFamily={shape.fontFamily}
             fill={shape.fill}
-            dominantBaseline="middle"
-          >
-            {shape.text || 'Text'}
-          </text>
-        </g>
-      );
+            stroke={shape.stroke}
+            strokeWidth={worldStrokeWidth}
+            {...commonProps}
+          />
+        );
 
-    default:
-      return null;
+      case 'circle':
+        const worldRadius = Math.min(worldWidth, worldHeight) / 2;
+        return (
+          <circle
+            key={shape.id}
+            cx={worldX + worldRadius}
+            cy={worldY + worldRadius}
+            r={worldRadius}
+            fill={shape.fill}
+            stroke={shape.stroke}
+            strokeWidth={worldStrokeWidth}
+            {...commonProps}
+          />
+        );
+
+      case 'text':
+        return (
+          <g key={shape.id} {...commonProps}>
+            <rect
+              x={worldX}
+              y={worldY}
+              width={worldWidth}
+              height={worldHeight}
+              fill="transparent"
+              stroke={isSelected ? shape.stroke : 'transparent'}
+              strokeWidth={worldStrokeWidth}
+              strokeDasharray={isSelected ? '5,5' : 'none'}
+            />
+            <text
+              x={worldX + 8}
+              y={worldY + worldHeight / 2 + 4}
+              fontSize={worldFontSize}
+              fontFamily={shape.fontFamily}
+              fill={shape.fill}
+              dominantBaseline="middle"
+            >
+              {shape.text || 'Text'}
+            </text>
+          </g>
+        );
+
+      default:
+        return null;
+    }
+  } else {
+    const connector = entity as Connector;
+    return (
+      <line
+        key={connector.id}
+        x1={connector.x}
+        y1={connector.y}
+        x2={connector.targetX}
+        y2={connector.targetY}
+        stroke={connector.stroke}
+        strokeWidth={connector.strokeWidth}
+        {...commonProps}
+      />
+    );
   }
 };

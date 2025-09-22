@@ -38,18 +38,18 @@ export const useKeyboardShortcuts = (shortcuts: KeyboardShortcut[]) => {
 
 // Predefined shortcuts for canvas operations
 export const useCanvasKeyboardShortcuts = () => {
-  const { selectedShapeIds, deleteShape, setToolMode, clearToolMode } =
+  const { selectedEntityIds, deleteShape, setToolMode, clearToolMode } =
     useCanvasStore();
 
   const shortcuts: KeyboardShortcut[] = [
     {
       key: 'Delete',
-      action: () => selectedShapeIds.forEach(id => deleteShape(id)),
+      action: () => selectedEntityIds.forEach(id => deleteShape(id)),
       description: 'Delete selected shapes',
     },
     {
       key: 'Backspace',
-      action: () => selectedShapeIds.forEach(id => deleteShape(id)),
+      action: () => selectedEntityIds.forEach(id => deleteShape(id)),
       description: 'Delete selected shapes',
     },
     {

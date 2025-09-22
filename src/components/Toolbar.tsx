@@ -8,7 +8,7 @@ export const Toolbar: React.FC = () => {
   const {
     shapes,
     deleteShape,
-    selectedShapeIds,
+    selectedEntityIds,
     toolMode,
     setToolMode,
     clearPersistedState,
@@ -18,7 +18,8 @@ export const Toolbar: React.FC = () => {
   const selectCircleTool = () => setToolMode('circle');
   const selectTextTool = () => setToolMode('text');
   const selectNoneTool = () => setToolMode('none');
-  const deleteSelected = () => selectedShapeIds.forEach(id => deleteShape(id));
+  const selectArrowTool = () => setToolMode('arrow');
+  const deleteSelected = () => selectedEntityIds.forEach(id => deleteShape(id));
   const handleClearAll = () => {
     if (
       confirm(
@@ -46,6 +47,10 @@ export const Toolbar: React.FC = () => {
       label: 'Select',
       toolMode: 'none',
       onClick: selectNoneTool,
+    },
+    {
+      toolMode: 'arrow',
+      onClick: selectArrowTool,
     },
   ];
 
@@ -76,9 +81,9 @@ export const Toolbar: React.FC = () => {
             variant="outline"
             size="sm"
             className="h-8"
-            disabled={selectedShapeIds.length === 0}
+            disabled={selectedEntityIds.length === 0}
           >
-            Delete ({selectedShapeIds.length})
+            Delete ({selectedEntityIds.length})
           </Button>
           <Button
             onClick={handleClearAll}

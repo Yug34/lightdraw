@@ -2,14 +2,14 @@ import { useCanvasStore } from '@/store/canvasStore';
 import React from 'react';
 
 export const CanvasInfo: React.FC = () => {
-  const { viewport, shapes, selectedShapeIds, toolMode, isSaving } =
+  const { viewport, shapes, selectedEntityIds, toolMode, isSaving } =
     useCanvasStore();
 
   return (
     <div className="absolute top-4 left-4 bg-white/80 backdrop-blur-sm rounded-lg px-3 py-2 text-sm text-gray-600 shadow-sm">
       <div>Zoom: {Math.round(viewport.zoom * 100)}%</div>
       <div>Shapes: {shapes.length}</div>
-      <div>Selected: {selectedShapeIds.length}</div>
+      <div>Selected: {selectedEntityIds.length}</div>
       <div>
         Tool:{' '}
         {toolMode === 'none'

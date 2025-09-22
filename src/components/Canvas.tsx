@@ -4,6 +4,7 @@ import { GridBackground } from '@/components/canvas/GridBackground';
 import { ShapeRenderer } from '@/components/canvas/ShapeRenderer';
 import { useCanvas } from '@/hooks';
 import { useCanvasStore } from '@/store/canvasStore';
+import type { Connector, Shape } from '@/store/canvasStore';
 import React from 'react';
 
 interface CanvasProps {}
@@ -14,7 +15,8 @@ export const Canvas: React.FC<CanvasProps> = () => {
     viewport,
     canvasSize,
     shapes,
-    selectedShapeIds,
+    connectors,
+    selectedEntityIds,
     handleMouseDown,
     handleMouseMove,
     handleMouseUp,
@@ -28,14 +30,28 @@ export const Canvas: React.FC<CanvasProps> = () => {
     loadPersistedState();
   }, [loadPersistedState]);
 
-  const renderShape = (shape: any) => {
-    const isSelected = selectedShapeIds.includes(shape.id);
+  const renderShape = (shape: Shape) => {
+    const isSelected = selectedEntityIds.includes(shape.id);
     return (
       <ShapeRenderer
         key={shape.id}
-        shape={shape}
+        entity={shape}
         isSelected={isSelected}
         onClick={handleShapeClick}
+        type="shape"
+      />
+    );
+  };
+
+  const renderConnector = (connector: Connector) => {
+    const isSelected = selectedEntityIds.includes(connector.id);
+    return (
+      <ShapeRenderer
+        key={connector.id}
+        entity={connector}
+        isSelected={isSelected}
+        onClick={handleShapeClick}
+        type="connector"
       />
     );
   };
@@ -63,6 +79,7 @@ export const Canvas: React.FC<CanvasProps> = () => {
         />
 
         {shapes.map(renderShape)}
+        {connectors.map(renderConnector)}
       </svg>
 
       <Toolbar />

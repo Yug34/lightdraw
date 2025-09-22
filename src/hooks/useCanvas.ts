@@ -23,7 +23,8 @@ export const useCanvas = (options: UseCanvasOptions = {}) => {
     viewport,
     canvasSize,
     shapes,
-    selectedShapeIds,
+    connectors,
+    selectedEntityIds,
     toolMode,
     setViewport,
     setViewportZoom,
@@ -32,6 +33,7 @@ export const useCanvas = (options: UseCanvasOptions = {}) => {
     selectShapes,
     clearSelection,
     placeShapeAtPosition,
+    placeConnectorAtPosition,
   } = useCanvasStore();
 
   // Update canvas size on mount and resize
@@ -124,7 +126,16 @@ export const useCanvas = (options: UseCanvasOptions = {}) => {
             const worldX = viewport.x + screenX / viewport.zoom;
             const worldY = viewport.y + screenY / viewport.zoom;
 
-            placeShapeAtPosition(worldX, worldY);
+            if (toolMode === 'arrow') {
+              placeConnectorAtPosition(
+                worldX,
+                worldY,
+                worldX - 100,
+                worldY - 100
+              );
+            } else {
+              placeShapeAtPosition(worldX, worldY);
+            }
           }
         } else if (enableSelection) {
           // Only clear selection if not holding Ctrl/Cmd (for multi-selection)
@@ -141,6 +152,7 @@ export const useCanvas = (options: UseCanvasOptions = {}) => {
       enableSelection,
       clearSelection,
       placeShapeAtPosition,
+      placeConnectorAtPosition,
     ]
   );
 
@@ -168,17 +180,17 @@ export const useCanvas = (options: UseCanvasOptions = {}) => {
 
       // multi select
       if (e.ctrlKey || e.metaKey) {
-        if (selectedShapeIds.includes(shapeId)) {
-          const newSelection = selectedShapeIds.filter(id => id !== shapeId);
+        if (selectedEntityIds.includes(shapeId)) {
+          const newSelection = selectedEntityIds.filter(id => id !== shapeId);
           selectShapes(newSelection);
         } else {
-          selectShapes([...selectedShapeIds, shapeId]);
+          selectShapes([...selectedEntityIds, shapeId]);
         }
       } else {
         selectShape(shapeId);
       }
     },
-    [selectShape, selectShapes, selectedShapeIds, enableSelection]
+    [selectShape, selectShapes, selectedEntityIds, enableSelection]
   );
 
   return {
@@ -187,7 +199,8 @@ export const useCanvas = (options: UseCanvasOptions = {}) => {
     viewport,
     canvasSize,
     shapes,
-    selectedShapeIds,
+    connectors,
+    selectedEntityIds,
     toolMode,
     handleMouseDown,
     handleMouseMove,
