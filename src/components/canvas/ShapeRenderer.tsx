@@ -96,17 +96,32 @@ export const ShapeRenderer: React.FC<ShapeRendererProps> = ({
     }
   } else {
     const connector = entity as Connector;
+    const markerId = `arrowhead-${connector.id}`;
+
     return (
-      <line
-        key={connector.id}
-        x1={connector.x}
-        y1={connector.y}
-        x2={connector.targetX}
-        y2={connector.targetY}
-        stroke={connector.stroke}
-        strokeWidth={connector.strokeWidth}
-        {...commonProps}
-      />
+      <g key={connector.id} {...commonProps}>
+        <defs>
+          <marker
+            id={markerId}
+            markerWidth="10"
+            markerHeight="7"
+            refX="9"
+            refY="3.5"
+            orient="auto"
+          >
+            <polygon points="0 0, 10 3.5, 0 7" fill={connector.stroke} />
+          </marker>
+        </defs>
+        <line
+          x1={connector.x}
+          y1={connector.y}
+          x2={connector.targetX}
+          y2={connector.targetY}
+          stroke={connector.stroke}
+          strokeWidth={connector.strokeWidth}
+          markerEnd={`url(#${markerId})`}
+        />
+      </g>
     );
   }
 };

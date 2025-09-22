@@ -292,7 +292,6 @@ export const useCanvasStore = create<CanvasState>()(
         set({ isSaving: true });
         await persistenceService.init();
         const state = get();
-        debugger;
         await persistenceService.saveCanvasState({
           viewport: state.viewport,
           shapes: state.shapes,
