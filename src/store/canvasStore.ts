@@ -266,6 +266,7 @@ export const useCanvasStore = create<CanvasState>()(
 
       set(state => ({
         connectors: [...state.connectors, connector],
+        toolMode: 'none',
       }));
     },
 
@@ -277,6 +278,7 @@ export const useCanvasStore = create<CanvasState>()(
         if (persistedState) {
           set({
             viewport: persistedState.viewport,
+            connectors: persistedState.connectors,
             shapes: persistedState.shapes,
           });
         }
@@ -290,9 +292,11 @@ export const useCanvasStore = create<CanvasState>()(
         set({ isSaving: true });
         await persistenceService.init();
         const state = get();
+        debugger;
         await persistenceService.saveCanvasState({
           viewport: state.viewport,
           shapes: state.shapes,
+          connectors: state.connectors,
         });
       } catch (error) {
         console.error('Failed to save state:', error);
