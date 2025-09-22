@@ -72,8 +72,8 @@ export const useCanvas = (options: UseCanvasOptions = {}) => {
         e.stopPropagation();
 
         const panSpeed = 0.3;
-        const deltaY = e.deltaY * panSpeed;
-        const deltaX = e.deltaX * panSpeed;
+        const deltaY = (e.deltaY * panSpeed) / viewport.zoom;
+        const deltaX = (e.deltaX * panSpeed) / viewport.zoom;
 
         // Handle Shift+mousewheel for horizontal panning (keyboard modifier)
         if (e.shiftKey) {
@@ -171,10 +171,14 @@ export const useCanvas = (options: UseCanvasOptions = {}) => {
         const deltaX = e.clientX - dragStart.x;
         const deltaY = e.clientY - dragStart.y;
 
-        setViewport({ x: lastPan.x - deltaX, y: lastPan.y - deltaY });
+        // Convert screen-space movement to world-space based on zoom
+        const worldDeltaX = deltaX / viewport.zoom;
+        const worldDeltaY = deltaY / viewport.zoom;
+
+        setViewport({ x: lastPan.x - worldDeltaX, y: lastPan.y - worldDeltaY });
       }
     },
-    [isDragging, dragStart, lastPan, enablePan, setViewport]
+    [isDragging, dragStart, lastPan, enablePan, setViewport, viewport.zoom]
   );
 
   const handleMouseUp = useCallback(() => {
