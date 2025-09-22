@@ -60,6 +60,7 @@ export interface CanvasState {
   selectedEntityIds: string[];
 
   toolMode: ToolMode;
+  pendingConnectorStart: Point | null;
 
   setViewport: (viewport: Partial<CanvasState['viewport']>) => void;
   setViewportZoom: (zoom: number) => void;
@@ -74,6 +75,7 @@ export interface CanvasState {
   moveShape: (id: string, deltaX: number, deltaY: number) => void;
   setToolMode: (mode: ToolMode) => void;
   clearToolMode: () => void;
+  setPendingConnectorStart: (point: Point | null) => void;
   placeShapeAtPosition: (x: number, y: number) => void;
   placeConnectorAtPosition: (
     x: number,
@@ -104,6 +106,7 @@ export const useCanvasStore = create<CanvasState>()(
     connectors: [],
     selectedEntityIds: [],
     toolMode: 'none',
+    pendingConnectorStart: null,
     isSaving: false,
 
     setViewport: viewport =>
@@ -183,6 +186,8 @@ export const useCanvasStore = create<CanvasState>()(
     setToolMode: mode => set({ toolMode: mode }),
 
     clearToolMode: () => set({ toolMode: 'none' }),
+
+    setPendingConnectorStart: point => set({ pendingConnectorStart: point }),
 
     placeShapeAtPosition: (x, y) =>
       set(state => {
@@ -325,12 +330,17 @@ let saveTimeout: NodeJS.Timeout | null = null;
 const DEBOUNCE_DELAY = 1000; // Save after 1 second of inactivity
 
 useCanvasStore.subscribe(
-  state => ({ shapes: state.shapes, viewport: state.viewport }),
+  state => ({
+    shapes: state.shapes,
+    connectors: state.connectors,
+    viewport: state.viewport,
+  }),
   (current, previous) => {
     // Only save if shapes or viewport actually changed
     if (
       previous &&
       (current.shapes !== previous.shapes ||
+        current.connectors !== previous.connectors ||
         current.viewport !== previous.viewport)
     ) {
       if (saveTimeout) {

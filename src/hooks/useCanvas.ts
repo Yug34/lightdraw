@@ -26,6 +26,7 @@ export const useCanvas = (options: UseCanvasOptions = {}) => {
     connectors,
     selectedEntityIds,
     toolMode,
+    pendingConnectorStart,
     setViewport,
     setViewportZoom,
     setCanvasSize,
@@ -34,6 +35,7 @@ export const useCanvas = (options: UseCanvasOptions = {}) => {
     clearSelection,
     placeShapeAtPosition,
     placeConnectorAtPosition,
+    setPendingConnectorStart,
   } = useCanvasStore();
 
   // Update canvas size on mount and resize
@@ -127,12 +129,17 @@ export const useCanvas = (options: UseCanvasOptions = {}) => {
             const worldY = viewport.y + screenY / viewport.zoom;
 
             if (toolMode === 'arrow') {
-              placeConnectorAtPosition(
-                worldX,
-                worldY,
-                worldX - 100,
-                worldY - 100
-              );
+              if (!pendingConnectorStart) {
+                setPendingConnectorStart({ x: worldX, y: worldY });
+              } else {
+                placeConnectorAtPosition(
+                  pendingConnectorStart.x,
+                  pendingConnectorStart.y,
+                  worldX,
+                  worldY
+                );
+                setPendingConnectorStart(null);
+              }
             } else {
               placeShapeAtPosition(worldX, worldY);
             }
@@ -153,6 +160,8 @@ export const useCanvas = (options: UseCanvasOptions = {}) => {
       clearSelection,
       placeShapeAtPosition,
       placeConnectorAtPosition,
+      pendingConnectorStart,
+      setPendingConnectorStart,
     ]
   );
 
