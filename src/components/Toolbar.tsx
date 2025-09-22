@@ -7,7 +7,7 @@ import React from 'react';
 export const Toolbar: React.FC = () => {
   const {
     shapes,
-    deleteShape,
+    deleteEntity,
     selectedEntityIds,
     toolMode,
     setToolMode,
@@ -19,7 +19,8 @@ export const Toolbar: React.FC = () => {
   const selectTextTool = () => setToolMode('text');
   const selectNoneTool = () => setToolMode('none');
   const selectArrowTool = () => setToolMode('arrow');
-  const deleteSelected = () => selectedEntityIds.forEach(id => deleteShape(id));
+  const deleteSelected = () =>
+    selectedEntityIds.forEach(id => deleteEntity(id));
   const handleClearAll = () => {
     if (
       confirm(

@@ -67,9 +67,9 @@ export interface CanvasState {
   addShape: (shape: Omit<Shape, 'id'>) => void;
   addConnector: (connector: Omit<Connector, 'id'>) => void;
   updateShape: (id: string, updates: Partial<Shape>) => void;
-  deleteShape: (id: string) => void;
-  selectShape: (id: string) => void;
-  selectShapes: (ids: string[]) => void;
+  deleteEntity: (id: string) => void;
+  selectEntity: (id: string) => void;
+  selectEntities: (ids: string[]) => void;
   clearSelection: () => void;
   moveShape: (id: string, deltaX: number, deltaY: number) => void;
   setToolMode: (mode: ToolMode) => void;
@@ -156,17 +156,18 @@ export const useCanvasStore = create<CanvasState>()(
         ),
       })),
 
-    deleteShape: id =>
+    deleteEntity: id =>
       set(state => ({
         shapes: state.shapes.filter(shape => shape.id !== id),
+        connectors: state.connectors.filter(connector => connector.id !== id),
         selectedEntityIds: state.selectedEntityIds.filter(
           entityId => entityId !== id
         ),
       })),
 
-    selectShape: id => set({ selectedEntityIds: [id] }),
+    selectEntity: id => set({ selectedEntityIds: [id] }),
 
-    selectShapes: ids => set({ selectedEntityIds: ids }),
+    selectEntities: ids => set({ selectedEntityIds: ids }),
 
     clearSelection: () => set({ selectedEntityIds: [] }),
 

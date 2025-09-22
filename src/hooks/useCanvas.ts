@@ -29,8 +29,8 @@ export const useCanvas = (options: UseCanvasOptions = {}) => {
     setViewport,
     setViewportZoom,
     setCanvasSize,
-    selectShape,
-    selectShapes,
+    selectEntity,
+    selectEntities,
     clearSelection,
     placeShapeAtPosition,
     placeConnectorAtPosition,
@@ -173,24 +173,24 @@ export const useCanvas = (options: UseCanvasOptions = {}) => {
   }, []);
 
   const handleShapeClick = useCallback(
-    (e: React.MouseEvent, shapeId: string) => {
+    (e: React.MouseEvent, entityId: string) => {
       if (!enableSelection) return;
 
       e.stopPropagation();
 
       // multi select
       if (e.ctrlKey || e.metaKey) {
-        if (selectedEntityIds.includes(shapeId)) {
-          const newSelection = selectedEntityIds.filter(id => id !== shapeId);
-          selectShapes(newSelection);
+        if (selectedEntityIds.includes(entityId)) {
+          const newSelection = selectedEntityIds.filter(id => id !== entityId);
+          selectEntities(newSelection);
         } else {
-          selectShapes([...selectedEntityIds, shapeId]);
+          selectEntities([...selectedEntityIds, entityId]);
         }
       } else {
-        selectShape(shapeId);
+        selectEntity(entityId);
       }
     },
-    [selectShape, selectShapes, selectedEntityIds, enableSelection]
+    [selectEntity, selectEntities, selectedEntityIds, enableSelection]
   );
 
   return {
