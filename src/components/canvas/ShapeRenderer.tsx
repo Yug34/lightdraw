@@ -1,4 +1,5 @@
 import type { Connector, Shape } from '@/store/canvasStore';
+import { useCanvas } from '@/hooks';
 import React from 'react';
 
 interface ShapeRendererProps {
@@ -14,6 +15,8 @@ export const ShapeRenderer: React.FC<ShapeRendererProps> = ({
   onClick,
   type,
 }) => {
+  const { selectedEntityIds } = useCanvas();
+
   const commonProps = {
     onClick: (e: React.MouseEvent) => onClick(e, entity.id),
     style: {
@@ -37,32 +40,52 @@ export const ShapeRenderer: React.FC<ShapeRendererProps> = ({
     switch (shape.type) {
       case 'rectangle':
         return (
-          <rect
-            key={shape.id}
-            x={worldX}
-            y={worldY}
-            width={worldWidth}
-            height={worldHeight}
-            fill={shape.fill}
-            stroke={shape.stroke}
-            strokeWidth={worldStrokeWidth}
-            {...commonProps}
-          />
+          <>
+            <rect
+              key={shape.id}
+              x={worldX}
+              y={worldY}
+              width={worldWidth}
+              height={worldHeight}
+              fill={shape.fill}
+              stroke={shape.stroke}
+              strokeWidth={worldStrokeWidth}
+              {...commonProps}
+            />
+            {isSelected && selectedEntityIds.length === 1 && (
+              <SelectionHandles
+                x={worldX}
+                y={worldY}
+                width={worldWidth}
+                height={worldHeight}
+              />
+            )}
+          </>
         );
 
       case 'circle':
         const worldRadius = Math.min(worldWidth, worldHeight) / 2;
         return (
-          <circle
-            key={shape.id}
-            cx={worldX + worldRadius}
-            cy={worldY + worldRadius}
-            r={worldRadius}
-            fill={shape.fill}
-            stroke={shape.stroke}
-            strokeWidth={worldStrokeWidth}
-            {...commonProps}
-          />
+          <>
+            <circle
+              key={shape.id}
+              cx={worldX + worldRadius}
+              cy={worldY + worldRadius}
+              r={worldRadius}
+              fill={shape.fill}
+              stroke={shape.stroke}
+              strokeWidth={worldStrokeWidth}
+              {...commonProps}
+            />
+            {isSelected && selectedEntityIds.length === 1 && (
+              <SelectionHandles
+                x={worldX}
+                y={worldY}
+                width={worldWidth}
+                height={worldHeight}
+              />
+            )}
+          </>
         );
 
       case 'text':
@@ -88,6 +111,14 @@ export const ShapeRenderer: React.FC<ShapeRendererProps> = ({
             >
               {shape.text || 'Text'}
             </text>
+            {isSelected && selectedEntityIds.length === 1 && (
+              <SelectionHandles
+                x={worldX}
+                y={worldY}
+                width={worldWidth}
+                height={worldHeight}
+              />
+            )}
           </g>
         );
 
@@ -337,4 +368,83 @@ const renderConnector = (connector: Connector, commonProps: any) => {
         </g>
       );
   }
+};
+
+interface SelectionHandlesProps {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+const HANDLE_SIZE = 6;
+
+const SelectionHandles: React.FC<SelectionHandlesProps> = ({
+  x,
+  y,
+  width,
+  height,
+}) => {
+  const half = HANDLE_SIZE / 2;
+  const cx = x + width / 2;
+  const cy = y + height / 2;
+
+  const handles = [
+    { key: 'nw', x: x - half, y: y - half },
+    { key: 'n', x: cx - half, y: y - half },
+    { key: 'ne', x: x + width - half, y: y - half },
+    { key: 'w', x: x - half, y: cy - half },
+    { key: 'e', x: x + width - half, y: cy - half },
+    { key: 'sw', x: x - half, y: y + height - half },
+    { key: 's', x: cx - half, y: y + height - half },
+    { key: 'se', x: x + width - half, y: y + height - half },
+  ];
+
+  return (
+    <g pointerEvents="none">
+      <rect
+        x={x}
+        y={y}
+        width={width}
+        height={height}
+        fill="none"
+        stroke="#3b82f6"
+        strokeWidth={1}
+        strokeDasharray="4,4"
+      />
+      {handles.map(h => (
+        <rect
+          key={h.key}
+          x={h.x}
+          y={h.y}
+          width={HANDLE_SIZE}
+          height={HANDLE_SIZE}
+          fill="#ffffff"
+          stroke="#3b82f6"
+          strokeWidth={1}
+          pointerEvents="all"
+          style={{ cursor: `${h.key}-resize` as any }}
+        />
+      ))}
+      {/* Rotate handle above top-center */}
+      <line
+        x1={cx}
+        y1={y - 16}
+        x2={cx}
+        y2={y}
+        stroke="#3b82f6"
+        strokeWidth={1}
+      />
+      <circle
+        cx={cx}
+        cy={y - 16}
+        r={6}
+        fill="#ffffff"
+        stroke="#3b82f6"
+        strokeWidth={1}
+        pointerEvents="all"
+        style={{ cursor: 'grab' }}
+      />
+    </g>
+  );
 };
