@@ -24,7 +24,7 @@ export interface Shape {
 
 export interface Connector {
   id: string;
-  type: 'arrow';
+  type: 'arrow' | 'line' | 'double-arrow' | 'dotted' | 'orthogonal';
   x: number;
   y: number;
   targetX: number;
@@ -32,6 +32,9 @@ export interface Connector {
   fill?: string;
   stroke?: string;
   strokeWidth?: number;
+  // Additional properties for specific connector types
+  dashArray?: string; // For dotted connectors
+  label?: string; // For labeled connectors
 }
 
 export interface Entity {
@@ -40,7 +43,15 @@ export interface Entity {
   entityData: Shape | Connector;
 }
 
-export type ToolMode = 'none' | 'rectangle' | 'circle' | 'text' | 'arrow';
+export type ToolMode =
+  | 'none'
+  | 'rectangle'
+  | 'circle'
+  | 'text'
+  | 'arrow'
+  | 'line'
+  | 'double-arrow'
+  | 'dotted';
 
 export interface CanvasState {
   viewport: {
@@ -256,17 +267,39 @@ export const useCanvasStore = create<CanvasState>()(
       }),
 
     placeConnectorAtPosition: (x, y, targetX, targetY) => {
+      const state = get();
       const id = `connector-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
+      // Determine connector type from current tool mode
+      let connectorType: Connector['type'] = 'arrow';
+      let additionalProps: Partial<Connector> = {};
+
+      switch (state.toolMode) {
+        case 'line':
+          connectorType = 'line';
+          break;
+        case 'double-arrow':
+          connectorType = 'double-arrow';
+          break;
+        case 'dotted':
+          connectorType = 'dotted';
+          additionalProps.dashArray = '5,5';
+          break;
+        default:
+          connectorType = 'arrow';
+      }
+
       const connector: Connector = {
         id,
         x,
         y,
         targetX,
         targetY,
-        type: 'arrow',
+        type: connectorType,
         fill: '#000000',
         stroke: '#000000',
         strokeWidth: 2,
+        ...additionalProps,
       };
 
       set(state => ({

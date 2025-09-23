@@ -18,7 +18,12 @@ export const Toolbar: React.FC = () => {
   const selectCircleTool = () => setToolMode('circle');
   const selectTextTool = () => setToolMode('text');
   const selectNoneTool = () => setToolMode('none');
+
+  // Connector tools
   const selectArrowTool = () => setToolMode('arrow');
+  const selectLineTool = () => setToolMode('line');
+  const selectDoubleArrowTool = () => setToolMode('double-arrow');
+  const selectDottedTool = () => setToolMode('dotted');
   const deleteSelected = () =>
     selectedEntityIds.forEach(id => deleteEntity(id));
   const handleClearAll = () => {
@@ -31,7 +36,7 @@ export const Toolbar: React.FC = () => {
     }
   };
 
-  const editModeButtons = [
+  const shapeButtons = [
     {
       toolMode: 'rectangle',
       onClick: selectRectangleTool,
@@ -49,18 +54,44 @@ export const Toolbar: React.FC = () => {
       toolMode: 'none',
       onClick: selectNoneTool,
     },
+  ];
+
+  const connectorButtons = [
     {
+      label: '→',
       toolMode: 'arrow',
       onClick: selectArrowTool,
+      title: 'Arrow',
+    },
+    {
+      label: '—',
+      toolMode: 'line',
+      onClick: selectLineTool,
+      title: 'Line',
+    },
+    {
+      label: '↔',
+      toolMode: 'double-arrow',
+      onClick: selectDoubleArrowTool,
+      title: 'Double Arrow',
+    },
+    {
+      label: '···→',
+      toolMode: 'dotted',
+      onClick: selectDottedTool,
+      title: 'Dotted Arrow',
     },
   ];
 
   return (
-    <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-white border-b border-gray-200 px-4 py-3">
-      <div className="flex items-center space-x-3">
+    <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-white border border-gray-200 rounded-lg px-4 py-3 shadow-lg max-w-4xl">
+      <div className="flex flex-col space-y-3">
+        {/* Shapes Row */}
         <div className="flex items-center space-x-2">
-          <span className="text-sm font-medium text-gray-700">Shapes:</span>
-          {editModeButtons.map(button => (
+          <span className="text-sm font-medium text-gray-700 min-w-[60px]">
+            Shapes:
+          </span>
+          {shapeButtons.map(button => (
             <Button
               key={button.toolMode}
               onClick={button.onClick}
@@ -73,9 +104,28 @@ export const Toolbar: React.FC = () => {
           ))}
         </div>
 
-        <Separator orientation="vertical" className="h-6" />
-
+        {/* Connectors Row */}
         <div className="flex items-center space-x-2">
+          <span className="text-sm font-medium text-gray-700 min-w-[80px]">
+            Connectors:
+          </span>
+          {connectorButtons.map(button => (
+            <Button
+              key={button.toolMode}
+              onClick={button.onClick}
+              variant={toolMode === button.toolMode ? 'default' : 'outline'}
+              size="sm"
+              className="h-8 min-w-[40px]"
+              title={button.title}
+            >
+              {button.label}
+            </Button>
+          ))}
+        </div>
+
+        {/* Actions Row */}
+        <div className="flex items-center space-x-3">
+          <Separator orientation="vertical" className="h-6" />
           <span className="text-sm font-medium text-gray-700">Actions:</span>
           <Button
             onClick={deleteSelected}
@@ -94,12 +144,10 @@ export const Toolbar: React.FC = () => {
           >
             Clear All
           </Button>
-        </div>
-
-        <Separator orientation="vertical" className="h-6" />
-
-        <div className="text-sm text-gray-500">
-          Total shapes: {shapes.length}
+          <Separator orientation="vertical" className="h-6" />
+          <div className="text-sm text-gray-500">
+            Total shapes: {shapes.length}
+          </div>
         </div>
       </div>
     </div>

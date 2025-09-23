@@ -128,7 +128,9 @@ export const useCanvas = (options: UseCanvasOptions = {}) => {
             const worldX = viewport.x + screenX / viewport.zoom;
             const worldY = viewport.y + screenY / viewport.zoom;
 
-            if (toolMode === 'arrow') {
+            if (
+              ['arrow', 'line', 'double-arrow', 'dotted'].includes(toolMode)
+            ) {
               if (!pendingConnectorStart) {
                 setPendingConnectorStart({ x: worldX, y: worldY });
               } else {
