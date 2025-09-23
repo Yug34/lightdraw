@@ -98,6 +98,15 @@ export interface CanvasState {
   savePersistedState: () => Promise<void>;
   clearPersistedState: () => Promise<void>;
   isSaving: boolean;
+
+  history: CanvasSnapshot[];
+  canUndo: boolean;
+  undo: () => void;
+}
+
+export interface CanvasSnapshot {
+  shapes: Shape[];
+  connectors: Connector[];
 }
 
 export const useCanvasStore = create<CanvasState>()(
@@ -119,6 +128,8 @@ export const useCanvasStore = create<CanvasState>()(
     toolMode: 'none',
     pendingConnectorStart: null,
     isSaving: false,
+    history: [],
+    canUndo: false,
 
     setViewport: viewport =>
       set(state => ({
@@ -145,6 +156,14 @@ export const useCanvasStore = create<CanvasState>()(
       };
 
       set(state => ({
+        history: [
+          ...state.history,
+          {
+            shapes: state.shapes.map(s => ({ ...s })),
+            connectors: state.connectors.map(c => ({ ...c })),
+          },
+        ],
+        canUndo: true,
         shapes: [...state.shapes, shape],
       }));
     },
@@ -159,12 +178,28 @@ export const useCanvasStore = create<CanvasState>()(
         ...connectorData,
       };
       set(state => ({
+        history: [
+          ...state.history,
+          {
+            shapes: state.shapes.map(s => ({ ...s })),
+            connectors: state.connectors.map(c => ({ ...c })),
+          },
+        ],
+        canUndo: true,
         connectors: [...state.connectors, connector],
       }));
     },
 
     updateShape: (id, updates) =>
       set(state => ({
+        history: [
+          ...state.history,
+          {
+            shapes: state.shapes.map(s => ({ ...s })),
+            connectors: state.connectors.map(c => ({ ...c })),
+          },
+        ],
+        canUndo: true,
         shapes: state.shapes.map(shape =>
           shape.id === id ? { ...shape, ...updates } : shape
         ),
@@ -172,6 +207,14 @@ export const useCanvasStore = create<CanvasState>()(
 
     deleteEntity: id =>
       set(state => ({
+        history: [
+          ...state.history,
+          {
+            shapes: state.shapes.map(s => ({ ...s })),
+            connectors: state.connectors.map(c => ({ ...c })),
+          },
+        ],
+        canUndo: true,
         shapes: state.shapes.filter(shape => shape.id !== id),
         connectors: state.connectors.filter(connector => connector.id !== id),
         selectedEntityIds: state.selectedEntityIds.filter(
@@ -187,6 +230,14 @@ export const useCanvasStore = create<CanvasState>()(
 
     moveShape: (id, deltaX, deltaY) =>
       set(state => ({
+        history: [
+          ...state.history,
+          {
+            shapes: state.shapes.map(s => ({ ...s })),
+            connectors: state.connectors.map(c => ({ ...c })),
+          },
+        ],
+        canUndo: true,
         shapes: state.shapes.map(shape =>
           shape.id === id
             ? { ...shape, x: shape.x + deltaX, y: shape.y + deltaY }
@@ -261,6 +312,14 @@ export const useCanvasStore = create<CanvasState>()(
         };
 
         return {
+          history: [
+            ...state.history,
+            {
+              shapes: state.shapes.map(s => ({ ...s })),
+              connectors: state.connectors.map(c => ({ ...c })),
+            },
+          ],
+          canUndo: true,
           shapes: [...state.shapes, shape],
           toolMode: 'none',
         };
@@ -303,6 +362,14 @@ export const useCanvasStore = create<CanvasState>()(
       };
 
       set(state => ({
+        history: [
+          ...state.history,
+          {
+            shapes: state.shapes.map(s => ({ ...s })),
+            connectors: state.connectors.map(c => ({ ...c })),
+          },
+        ],
+        canUndo: true,
         connectors: [...state.connectors, connector],
         toolMode: 'none',
       }));
@@ -348,6 +415,7 @@ export const useCanvasStore = create<CanvasState>()(
         await persistenceService.clearCanvasState();
         set({
           shapes: [],
+          connectors: [],
           selectedEntityIds: [],
           viewport: { x: 0, y: 0, zoom: 1 },
         });
@@ -355,6 +423,20 @@ export const useCanvasStore = create<CanvasState>()(
         console.error('Failed to clear persisted state:', error);
       }
     },
+
+    undo: () =>
+      set(state => {
+        if (state.history.length === 0) return state;
+        const previous = state.history[state.history.length - 1];
+        const nextHistory = state.history.slice(0, -1);
+        return {
+          history: nextHistory,
+          canUndo: nextHistory.length > 0,
+          shapes: previous.shapes.map(s => ({ ...s })),
+          connectors: previous.connectors.map(c => ({ ...c })),
+          selectedEntityIds: [],
+        };
+      }),
   }))
 );
 

@@ -7,11 +7,14 @@ import React from 'react';
 export const Toolbar: React.FC = () => {
   const {
     shapes,
+    connectors,
     deleteEntity,
     selectedEntityIds,
     toolMode,
     setToolMode,
     clearPersistedState,
+    undo,
+    canUndo,
   } = useCanvasStore();
 
   const selectRectangleTool = () => setToolMode('rectangle');
@@ -128,6 +131,15 @@ export const Toolbar: React.FC = () => {
           <Separator orientation="vertical" className="h-6" />
           <span className="text-sm font-medium text-gray-700">Actions:</span>
           <Button
+            onClick={undo}
+            variant="outline"
+            size="sm"
+            className="h-8"
+            disabled={!canUndo}
+          >
+            Undo
+          </Button>
+          <Button
             onClick={deleteSelected}
             variant="outline"
             size="sm"
@@ -146,7 +158,7 @@ export const Toolbar: React.FC = () => {
           </Button>
           <Separator orientation="vertical" className="h-6" />
           <div className="text-sm text-gray-500">
-            Total shapes: {shapes.length}
+            Total shapes: {shapes.length + connectors.length}
           </div>
         </div>
       </div>

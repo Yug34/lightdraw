@@ -38,7 +38,7 @@ export const useKeyboardShortcuts = (shortcuts: KeyboardShortcut[]) => {
 
 // Predefined shortcuts for canvas operations
 export const useCanvasKeyboardShortcuts = () => {
-  const { selectedEntityIds, deleteEntity, setToolMode, clearToolMode } =
+  const { selectedEntityIds, deleteEntity, setToolMode, clearToolMode, undo } =
     useCanvasStore();
 
   const shortcuts: KeyboardShortcut[] = [
@@ -76,6 +76,18 @@ export const useCanvasKeyboardShortcuts = () => {
       key: 'v',
       action: () => setToolMode('none'),
       description: 'Select selection tool',
+    },
+    {
+      key: 'z',
+      ctrlKey: true,
+      action: () => undo(),
+      description: 'Undo',
+    },
+    {
+      key: 'z',
+      metaKey: true,
+      action: () => undo(),
+      description: 'Undo',
     },
   ];
 
