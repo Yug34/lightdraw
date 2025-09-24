@@ -5,6 +5,11 @@ import { ShapeRenderer } from '@/components/canvas/ShapeRenderer';
 import { useCanvas } from '@/hooks';
 import { useCanvasStore } from '@/store/canvasStore';
 import type { Connector, Shape } from '@/store/canvasStore';
+import { SidebarProvider } from '@/components/ui/sidebar';
+import {
+  CanvasSidebar,
+  CanvasSidebarTrigger,
+} from '@/components/canvas/CanvasSidebar';
 import React from 'react';
 
 interface CanvasProps {}
@@ -60,33 +65,37 @@ export const Canvas: React.FC<CanvasProps> = () => {
   };
 
   return (
-    <div className={`relative overflow-hidden w-full h-full`}>
-      <svg
-        className="w-screen h-screen"
-        ref={svgRef}
-        viewBox={`${viewport.x} ${viewport.y} ${canvasSize.width / viewport.zoom} ${canvasSize.height / viewport.zoom}`}
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-        style={{
-          background: '#f8fafc',
-        }}
-      >
-        <GridBackground />
-        <rect
-          x={viewport.x - canvasSize.width}
-          y={viewport.y - canvasSize.height}
-          width={canvasSize.width * 3}
-          height={canvasSize.height * 3}
-          fill="url(#grid)"
-        />
+    <SidebarProvider defaultOpen={false}>
+      <CanvasSidebar />
+      <div className={`relative overflow-hidden w-full h-full`}>
+        <svg
+          className="w-screen h-screen"
+          ref={svgRef}
+          viewBox={`${viewport.x} ${viewport.y} ${canvasSize.width / viewport.zoom} ${canvasSize.height / viewport.zoom}`}
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          style={{
+            background: '#f8fafc',
+          }}
+        >
+          <GridBackground />
+          <rect
+            x={viewport.x - canvasSize.width}
+            y={viewport.y - canvasSize.height}
+            width={canvasSize.width * 3}
+            height={canvasSize.height * 3}
+            fill="url(#grid)"
+          />
 
-        {(shapes ?? []).map(renderShape)}
-        {(connectors ?? []).map(renderConnector)}
-      </svg>
+          {(shapes ?? []).map(renderShape)}
+          {(connectors ?? []).map(renderConnector)}
+        </svg>
 
-      <Toolbar />
-      <CanvasInfo />
-    </div>
+        <Toolbar />
+        {/* <CanvasInfo /> */}
+        <CanvasSidebarTrigger />
+      </div>
+    </SidebarProvider>
   );
 };

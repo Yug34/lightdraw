@@ -23,7 +23,7 @@ function App() {
 
   return (
     <div className="flex flex-col w-screen h-screen">
-      <Header />
+      {/* <Header /> */}
 
       <main className="flex-1 relative">
         <Canvas />
