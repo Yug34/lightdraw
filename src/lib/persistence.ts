@@ -84,7 +84,14 @@ class PersistenceService {
         if (result) {
           // Remove the id field and return the state
           const { id, ...state } = result;
-          resolve(state as PersistedCanvasState);
+          // Ensure arrays are always initialized
+          const normalizedState: PersistedCanvasState = {
+            viewport: state.viewport || { x: 0, y: 0, zoom: 1 },
+            shapes: state.shapes || [],
+            connectors: state.connectors || [],
+            lastSaved: state.lastSaved || Date.now(),
+          };
+          resolve(normalizedState);
         } else {
           resolve(null);
         }

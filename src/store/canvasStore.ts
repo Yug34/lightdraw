@@ -168,8 +168,8 @@ export const useCanvasStore = create<CanvasState>()(
         history: [
           ...state.history,
           {
-            shapes: state.shapes.map(s => ({ ...s })),
-            connectors: state.connectors.map(c => ({ ...c })),
+            shapes: (state.shapes || []).map(s => ({ ...s })),
+            connectors: (state.connectors || []).map(c => ({ ...c })),
           },
         ],
         canUndo: true,
@@ -190,8 +190,8 @@ export const useCanvasStore = create<CanvasState>()(
         history: [
           ...state.history,
           {
-            shapes: state.shapes.map(s => ({ ...s })),
-            connectors: state.connectors.map(c => ({ ...c })),
+            shapes: (state.shapes || []).map(s => ({ ...s })),
+            connectors: (state.connectors || []).map(c => ({ ...c })),
           },
         ],
         canUndo: true,
@@ -204,8 +204,8 @@ export const useCanvasStore = create<CanvasState>()(
         history: [
           ...state.history,
           {
-            shapes: state.shapes.map(s => ({ ...s })),
-            connectors: state.connectors.map(c => ({ ...c })),
+            shapes: (state.shapes || []).map(s => ({ ...s })),
+            connectors: (state.connectors || []).map(c => ({ ...c })),
           },
         ],
         canUndo: true,
@@ -219,13 +219,15 @@ export const useCanvasStore = create<CanvasState>()(
         history: [
           ...state.history,
           {
-            shapes: state.shapes.map(s => ({ ...s })),
-            connectors: state.connectors.map(c => ({ ...c })),
+            shapes: (state.shapes || []).map(s => ({ ...s })),
+            connectors: (state.connectors || []).map(c => ({ ...c })),
           },
         ],
         canUndo: true,
-        shapes: state.shapes.filter(shape => shape.id !== id),
-        connectors: state.connectors.filter(connector => connector.id !== id),
+        shapes: (state.shapes || []).filter(shape => shape.id !== id),
+        connectors: (state.connectors || []).filter(
+          connector => connector.id !== id
+        ),
         selectedEntityIds: state.selectedEntityIds.filter(
           entityId => entityId !== id
         ),
@@ -242,8 +244,8 @@ export const useCanvasStore = create<CanvasState>()(
         history: [
           ...state.history,
           {
-            shapes: state.shapes.map(s => ({ ...s })),
-            connectors: state.connectors.map(c => ({ ...c })),
+            shapes: (state.shapes || []).map(s => ({ ...s })),
+            connectors: (state.connectors || []).map(c => ({ ...c })),
           },
         ],
         canUndo: true,
@@ -259,8 +261,8 @@ export const useCanvasStore = create<CanvasState>()(
         history: [
           ...state.history,
           {
-            shapes: state.shapes.map(s => ({ ...s })),
-            connectors: state.connectors.map(c => ({ ...c })),
+            shapes: (state.shapes || []).map(s => ({ ...s })),
+            connectors: (state.connectors || []).map(c => ({ ...c })),
           },
         ],
         canUndo: true,
@@ -274,8 +276,8 @@ export const useCanvasStore = create<CanvasState>()(
         history: [
           ...state.history,
           {
-            shapes: state.shapes.map(s => ({ ...s })),
-            connectors: state.connectors.map(c => ({ ...c })),
+            shapes: (state.shapes || []).map(s => ({ ...s })),
+            connectors: (state.connectors || []).map(c => ({ ...c })),
           },
         ],
         canUndo: true,
@@ -362,8 +364,8 @@ export const useCanvasStore = create<CanvasState>()(
           history: [
             ...state.history,
             {
-              shapes: state.shapes.map(s => ({ ...s })),
-              connectors: state.connectors.map(c => ({ ...c })),
+              shapes: (state.shapes || []).map(s => ({ ...s })),
+              connectors: (state.connectors || []).map(c => ({ ...c })),
             },
           ],
           canUndo: true,
@@ -412,8 +414,8 @@ export const useCanvasStore = create<CanvasState>()(
         history: [
           ...state.history,
           {
-            shapes: state.shapes.map(s => ({ ...s })),
-            connectors: state.connectors.map(c => ({ ...c })),
+            shapes: (state.shapes || []).map(s => ({ ...s })),
+            connectors: (state.connectors || []).map(c => ({ ...c })),
           },
         ],
         canUndo: true,
@@ -429,13 +431,18 @@ export const useCanvasStore = create<CanvasState>()(
 
         if (persistedState) {
           set({
-            viewport: persistedState.viewport,
-            connectors: persistedState.connectors,
-            shapes: persistedState.shapes,
+            viewport: persistedState.viewport || { x: 0, y: 0, zoom: 1 },
+            connectors: persistedState.connectors || [],
+            shapes: persistedState.shapes || [],
           });
         }
       } catch (error) {
         console.error('Failed to load persisted state:', error);
+        // Ensure arrays are initialized even if loading fails
+        set(state => ({
+          connectors: state.connectors || [],
+          shapes: state.shapes || [],
+        }));
       }
     },
 
@@ -479,8 +486,8 @@ export const useCanvasStore = create<CanvasState>()(
         return {
           history: nextHistory,
           canUndo: nextHistory.length > 0,
-          shapes: previous.shapes.map(s => ({ ...s })),
-          connectors: previous.connectors.map(c => ({ ...c })),
+          shapes: (previous.shapes || []).map(s => ({ ...s })),
+          connectors: (previous.connectors || []).map(c => ({ ...c })),
           selectedEntityIds: [],
         };
       }),
