@@ -158,7 +158,7 @@ export const Toolbar: React.FC = () => {
           </Button>
           <Separator orientation="vertical" className="h-6" />
           <div className="text-sm text-gray-500">
-            Total shapes: {shapes.length + connectors.length}
+            Total shapes: {(shapes ?? []).length + (connectors ?? []).length}
           </div>
         </div>
       </div>
