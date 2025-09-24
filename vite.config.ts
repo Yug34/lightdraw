@@ -24,4 +24,7 @@ export default defineConfig({
     },
   },
   assetsInclude: ['**/*.wasm'],
+  build: {
+    minify: false,
+  },
 });

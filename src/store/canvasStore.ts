@@ -86,6 +86,13 @@ export interface CanvasState {
   clearSelection: () => void;
   moveShape: (id: string, deltaX: number, deltaY: number) => void;
   rotateShape: (id: string, rotation: number) => void;
+  resizeShape: (
+    id: string,
+    width: number,
+    height: number,
+    deltaX?: number,
+    deltaY?: number
+  ) => void;
   setToolMode: (mode: ToolMode) => void;
   clearToolMode: () => void;
   setPendingConnectorStart: (point: Point | null) => void;
@@ -259,6 +266,29 @@ export const useCanvasStore = create<CanvasState>()(
         canUndo: true,
         shapes: state.shapes.map(shape =>
           shape.id === id ? { ...shape, rotation } : shape
+        ),
+      })),
+
+    resizeShape: (id, width, height, deltaX = 0, deltaY = 0) =>
+      set(state => ({
+        history: [
+          ...state.history,
+          {
+            shapes: state.shapes.map(s => ({ ...s })),
+            connectors: state.connectors.map(c => ({ ...c })),
+          },
+        ],
+        canUndo: true,
+        shapes: state.shapes.map(shape =>
+          shape.id === id
+            ? {
+                ...shape,
+                width: Math.max(10, width), // Minimum width of 10
+                height: Math.max(10, height), // Minimum height of 10
+                x: shape.x + deltaX,
+                y: shape.y + deltaY,
+              }
+            : shape
         ),
       })),
 

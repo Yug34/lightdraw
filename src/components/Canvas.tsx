@@ -78,8 +78,8 @@ export const Canvas: React.FC<CanvasProps> = () => {
           fill="url(#grid)"
         />
 
-        {shapes.map(renderShape)}
-        {connectors.map(renderConnector)}
+        {(shapes ?? []).map(renderShape)}
+        {(connectors ?? []).map(renderConnector)}
       </svg>
 
       <Toolbar />

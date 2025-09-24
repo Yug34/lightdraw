@@ -39,6 +39,7 @@ export const useCanvas = (options: UseCanvasOptions = {}) => {
     placeConnectorAtPosition,
     setPendingConnectorStart,
     rotateShape,
+    resizeShape,
   } = useCanvasStore();
 
   // Update canvas size on mount and resize
@@ -106,6 +107,12 @@ export const useCanvas = (options: UseCanvasOptions = {}) => {
 
   const handleMouseDown = useCallback(
     (e: React.MouseEvent) => {
+      // Check if the event target is a resize handle
+      const target = e.target as Element;
+      if (target && target.getAttribute('data-resize-handle')) {
+        return; // Don't handle resize handle clicks
+      }
+
       if (isRotating || isResizing) {
         return;
       } else {
@@ -196,6 +203,16 @@ export const useCanvas = (options: UseCanvasOptions = {}) => {
     setIsDragging(false);
   }, []);
 
+  // Update document cursor during resize operations
+  useEffect(() => {
+    if (isResizing) {
+      document.body.style.cursor = 'nw-resize';
+      return () => {
+        document.body.style.cursor = '';
+      };
+    }
+  }, [isResizing]);
+
   const handleShapeClick = useCallback(
     (e: React.MouseEvent, entityId: string) => {
       if (!enableSelection) return;
@@ -235,5 +252,6 @@ export const useCanvas = (options: UseCanvasOptions = {}) => {
     isResizing,
     setIsResizing,
     rotateShape,
+    resizeShape,
   };
 };

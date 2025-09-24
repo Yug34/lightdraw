@@ -445,17 +445,30 @@ const SelectionHandles: React.FC<SelectionHandlesProps> = ({
     setIsRotating,
     setIsResizing,
     isRotating,
+    isResizing,
     rotateShape,
+    resizeShape,
     selectedEntityIds,
+    viewport,
   } = useCanvas();
   const handleContainerRef = useRef<SVGRectElement>(null);
   const initialAngleRef = useRef<number>(0);
   const initialMouseAngleRef = useRef<number>(0);
+  const initialResizeDataRef = useRef<{
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+    mouseX: number;
+    mouseY: number;
+    handle: string;
+    rotation: number;
+  } | null>(null);
   const half = HANDLE_SIZE / 2;
   const cx = x + width / 2;
   const cy = y + height / 2;
 
-  // Handle global mouse move for rotation
+  // Handle global mouse move for rotation and resize
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       if (
@@ -474,19 +487,153 @@ const SelectionHandles: React.FC<SelectionHandlesProps> = ({
         const newRotation = initialAngleRef.current + angleDelta;
 
         rotateShape(selectedEntityIds[0], newRotation);
+      } else if (
+        isResizing &&
+        initialResizeDataRef.current &&
+        selectedEntityIds.length === 1
+      ) {
+        // Convert screen coordinates to world coordinates
+        const deltaX =
+          (e.clientX - initialResizeDataRef.current.mouseX) / viewport.zoom;
+        const deltaY =
+          (e.clientY - initialResizeDataRef.current.mouseY) / viewport.zoom;
+
+        // If the shape is rotated, we need to transform the mouse movement
+        // into the shape's local coordinate system
+        const rotation = initialResizeDataRef.current.rotation;
+        let localDeltaX = deltaX;
+        let localDeltaY = deltaY;
+
+        if (rotation !== 0) {
+          // Convert rotation to radians
+          const radians = (rotation * Math.PI) / 180;
+          const cos = Math.cos(-radians); // Negative because we want to reverse the rotation
+          const sin = Math.sin(-radians);
+
+          // Transform the delta into local coordinates
+          localDeltaX = deltaX * cos - deltaY * sin;
+          localDeltaY = deltaX * sin + deltaY * cos;
+        }
+
+        let newX = initialResizeDataRef.current.x;
+        let newY = initialResizeDataRef.current.y;
+        let newWidth = initialResizeDataRef.current.width;
+        let newHeight = initialResizeDataRef.current.height;
+
+        const handle = initialResizeDataRef.current.handle;
+
+        // Handle different resize directions
+        switch (handle) {
+          case 'se': // Bottom-right corner
+            newWidth = Math.max(
+              10,
+              initialResizeDataRef.current.width + localDeltaX
+            );
+            newHeight = Math.max(
+              10,
+              initialResizeDataRef.current.height + localDeltaY
+            );
+            break;
+          case 'sw': // Bottom-left corner
+            newX = initialResizeDataRef.current.x + localDeltaX;
+            newWidth = Math.max(
+              10,
+              initialResizeDataRef.current.width - localDeltaX
+            );
+            newHeight = Math.max(
+              10,
+              initialResizeDataRef.current.height + localDeltaY
+            );
+            break;
+          case 'ne': // Top-right corner
+            newY = initialResizeDataRef.current.y + localDeltaY;
+            newWidth = Math.max(
+              10,
+              initialResizeDataRef.current.width + localDeltaX
+            );
+            newHeight = Math.max(
+              10,
+              initialResizeDataRef.current.height - localDeltaY
+            );
+            break;
+          case 'nw': // Top-left corner
+            newX = initialResizeDataRef.current.x + localDeltaX;
+            newY = initialResizeDataRef.current.y + localDeltaY;
+            newWidth = Math.max(
+              10,
+              initialResizeDataRef.current.width - localDeltaX
+            );
+            newHeight = Math.max(
+              10,
+              initialResizeDataRef.current.height - localDeltaY
+            );
+            break;
+          case 'e': // Right edge
+            newWidth = Math.max(
+              10,
+              initialResizeDataRef.current.width + localDeltaX
+            );
+            break;
+          case 'w': // Left edge
+            newX = initialResizeDataRef.current.x + localDeltaX;
+            newWidth = Math.max(
+              10,
+              initialResizeDataRef.current.width - localDeltaX
+            );
+            break;
+          case 's': // Bottom edge
+            newHeight = Math.max(
+              10,
+              initialResizeDataRef.current.height + localDeltaY
+            );
+            break;
+          case 'n': // Top edge
+            newY = initialResizeDataRef.current.y + localDeltaY;
+            newHeight = Math.max(
+              10,
+              initialResizeDataRef.current.height - localDeltaY
+            );
+            break;
+        }
+
+        const deltaPosX = newX - initialResizeDataRef.current.x;
+        const deltaPosY = newY - initialResizeDataRef.current.y;
+
+        resizeShape(
+          selectedEntityIds[0],
+          newWidth,
+          newHeight,
+          deltaPosX,
+          deltaPosY
+        );
       }
     };
 
-    if (isRotating) {
+    const handleMouseUp = () => {
+      setIsRotating(false);
+      setIsResizing(false);
+      initialResizeDataRef.current = null;
+    };
+
+    if (isRotating || isResizing) {
       document.addEventListener('mousemove', handleMouseMove);
-      document.addEventListener('mouseup', () => setIsRotating(false));
+      document.addEventListener('mouseup', handleMouseUp);
     }
 
     return () => {
       document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', () => setIsRotating(false));
+      document.removeEventListener('mouseup', handleMouseUp);
     };
-  }, [isRotating, selectedEntityIds, rotateShape, setIsRotating]);
+  }, [
+    isRotating,
+    isResizing,
+    selectedEntityIds,
+    rotateShape,
+    resizeShape,
+    setIsRotating,
+    setIsResizing,
+    viewport.zoom,
+  ]);
 
   const handles = [
     { key: 'nw', x: x - half, y: y - half },
@@ -519,11 +666,20 @@ const SelectionHandles: React.FC<SelectionHandlesProps> = ({
         <rect
           onMouseDown={e => {
             e.stopPropagation();
-            setIsResizing(true);
-          }}
-          onMouseUp={e => {
-            e.stopPropagation();
-            setIsResizing(false);
+            e.preventDefault();
+            if (selectedEntityIds.length === 1) {
+              initialResizeDataRef.current = {
+                x,
+                y,
+                width,
+                height,
+                mouseX: e.clientX,
+                mouseY: e.clientY,
+                handle: h.key,
+                rotation,
+              };
+              setIsResizing(true);
+            }
           }}
           key={h.key}
           x={h.x}
@@ -535,6 +691,7 @@ const SelectionHandles: React.FC<SelectionHandlesProps> = ({
           strokeWidth={1}
           pointerEvents="all"
           style={{ cursor: `${h.key}-resize` as any }}
+          data-resize-handle="true"
         />
       ))}
       {/* Rotate handle above top-center */}
@@ -571,6 +728,7 @@ const SelectionHandles: React.FC<SelectionHandlesProps> = ({
         strokeWidth={1}
         pointerEvents="all"
         style={{ cursor: 'grab' }}
+        data-resize-handle="true"
       />
     </g>
   );
