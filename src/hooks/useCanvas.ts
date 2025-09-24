@@ -18,6 +18,8 @@ export const useCanvas = (options: UseCanvasOptions = {}) => {
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [lastPan, setLastPan] = useState({ x: 0, y: 0 });
+  const [isRotating, setIsRotating] = useState(false);
+  const [isResizing, setIsResizing] = useState(false);
 
   const {
     viewport,
@@ -36,6 +38,7 @@ export const useCanvas = (options: UseCanvasOptions = {}) => {
     placeShapeAtPosition,
     placeConnectorAtPosition,
     setPendingConnectorStart,
+    rotateShape,
   } = useCanvasStore();
 
   // Update canvas size on mount and resize
@@ -103,53 +106,57 @@ export const useCanvas = (options: UseCanvasOptions = {}) => {
 
   const handleMouseDown = useCallback(
     (e: React.MouseEvent) => {
-      if (e.button === 1 && enablePan) {
-        // Middle mouse button
-        setIsDragging(true);
-        setDragStart({ x: e.clientX, y: e.clientY });
-        setLastPan({ x: viewport.x, y: viewport.y });
-        e.preventDefault();
-      } else if (e.button === 0 && e.metaKey && enablePan) {
-        // Cmd+click
-        setIsDragging(true);
-        setDragStart({ x: e.clientX, y: e.clientY });
-        setLastPan({ x: viewport.x, y: viewport.y });
-        e.preventDefault();
-      } else if (e.button === 0) {
-        // Left click
-        if (toolMode !== 'none') {
-          // Convert screen coordinates to world coordinates
-          const rect = svgRef.current?.getBoundingClientRect();
-          if (rect) {
-            const screenX = e.clientX - rect.left;
-            const screenY = e.clientY - rect.top;
+      if (isRotating || isResizing) {
+        return;
+      } else {
+        if (e.button === 1 && enablePan) {
+          // Middle mouse button
+          setIsDragging(true);
+          setDragStart({ x: e.clientX, y: e.clientY });
+          setLastPan({ x: viewport.x, y: viewport.y });
+          e.preventDefault();
+        } else if (e.button === 0 && e.metaKey && enablePan) {
+          // Cmd+click
+          setIsDragging(true);
+          setDragStart({ x: e.clientX, y: e.clientY });
+          setLastPan({ x: viewport.x, y: viewport.y });
+          e.preventDefault();
+        } else if (e.button === 0) {
+          // Left click
+          if (toolMode !== 'none') {
+            // Convert screen coordinates to world coordinates
+            const rect = svgRef.current?.getBoundingClientRect();
+            if (rect) {
+              const screenX = e.clientX - rect.left;
+              const screenY = e.clientY - rect.top;
 
-            // Convert to world coordinates by accounting for viewport offset and zoom
-            const worldX = viewport.x + screenX / viewport.zoom;
-            const worldY = viewport.y + screenY / viewport.zoom;
+              // Convert to world coordinates by accounting for viewport offset and zoom
+              const worldX = viewport.x + screenX / viewport.zoom;
+              const worldY = viewport.y + screenY / viewport.zoom;
 
-            if (
-              ['arrow', 'line', 'double-arrow', 'dotted'].includes(toolMode)
-            ) {
-              if (!pendingConnectorStart) {
-                setPendingConnectorStart({ x: worldX, y: worldY });
+              if (
+                ['arrow', 'line', 'double-arrow', 'dotted'].includes(toolMode)
+              ) {
+                if (!pendingConnectorStart) {
+                  setPendingConnectorStart({ x: worldX, y: worldY });
+                } else {
+                  placeConnectorAtPosition(
+                    pendingConnectorStart.x,
+                    pendingConnectorStart.y,
+                    worldX,
+                    worldY
+                  );
+                  setPendingConnectorStart(null);
+                }
               } else {
-                placeConnectorAtPosition(
-                  pendingConnectorStart.x,
-                  pendingConnectorStart.y,
-                  worldX,
-                  worldY
-                );
-                setPendingConnectorStart(null);
+                placeShapeAtPosition(worldX, worldY);
               }
-            } else {
-              placeShapeAtPosition(worldX, worldY);
             }
-          }
-        } else if (enableSelection) {
-          // Only clear selection if not holding Ctrl/Cmd (for multi-selection)
-          if (!e.ctrlKey && !e.metaKey) {
-            clearSelection();
+          } else if (enableSelection) {
+            // Only clear selection if not holding Ctrl/Cmd (for multi-selection)
+            if (!e.ctrlKey && !e.metaKey) {
+              clearSelection();
+            }
           }
         }
       }
@@ -164,6 +171,8 @@ export const useCanvas = (options: UseCanvasOptions = {}) => {
       placeConnectorAtPosition,
       pendingConnectorStart,
       setPendingConnectorStart,
+      isRotating,
+      isResizing,
     ]
   );
 
@@ -221,5 +230,10 @@ export const useCanvas = (options: UseCanvasOptions = {}) => {
     handleMouseMove,
     handleMouseUp,
     handleShapeClick,
+    isRotating,
+    setIsRotating,
+    isResizing,
+    setIsResizing,
+    rotateShape,
   };
 };

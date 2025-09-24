@@ -1,6 +1,6 @@
 import type { Connector, Shape } from '@/store/canvasStore';
 import { useCanvas } from '@/hooks';
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 
 interface ShapeRendererProps {
   entity: Shape | Connector;
@@ -15,8 +15,6 @@ export const ShapeRenderer: React.FC<ShapeRendererProps> = ({
   onClick,
   type,
 }) => {
-  const { selectedEntityIds } = useCanvas();
-
   const commonProps = {
     onClick: (e: React.MouseEvent) => onClick(e, entity.id),
     style: {
@@ -30,6 +28,7 @@ export const ShapeRenderer: React.FC<ShapeRendererProps> = ({
   const worldX = entity.x;
   const worldY = entity.y;
   const worldStrokeWidth = entity.strokeWidth || 2;
+  const rotation = (entity as Shape).rotation || 0;
 
   if (type === 'shape') {
     const shape = entity as Shape;
@@ -40,11 +39,20 @@ export const ShapeRenderer: React.FC<ShapeRendererProps> = ({
     switch (shape.type) {
       case 'rectangle':
         return (
-          <>
+          <ShapeWithHandles
+            shape={shape}
+            isSelected={isSelected}
+            worldX={worldX}
+            worldY={worldY}
+            worldWidth={worldWidth}
+            worldHeight={worldHeight}
+            rotation={rotation}
+            commonProps={commonProps}
+          >
             <rect
               key={shape.id}
-              x={worldX}
-              y={worldY}
+              x={0}
+              y={0}
               width={worldWidth}
               height={worldHeight}
               fill={shape.fill}
@@ -52,48 +60,50 @@ export const ShapeRenderer: React.FC<ShapeRendererProps> = ({
               strokeWidth={worldStrokeWidth}
               {...commonProps}
             />
-            {isSelected && selectedEntityIds.length === 1 && (
-              <SelectionHandles
-                x={worldX}
-                y={worldY}
-                width={worldWidth}
-                height={worldHeight}
-              />
-            )}
-          </>
+          </ShapeWithHandles>
         );
 
       case 'circle':
         const worldRadius = Math.min(worldWidth, worldHeight) / 2;
         return (
-          <>
+          <ShapeWithHandles
+            shape={shape}
+            isSelected={isSelected}
+            worldX={worldX}
+            worldY={worldY}
+            worldWidth={worldWidth}
+            worldHeight={worldHeight}
+            rotation={rotation}
+            commonProps={commonProps}
+          >
             <circle
               key={shape.id}
-              cx={worldX + worldRadius}
-              cy={worldY + worldRadius}
+              cx={0}
+              cy={0}
               r={worldRadius}
               fill={shape.fill}
               stroke={shape.stroke}
               strokeWidth={worldStrokeWidth}
               {...commonProps}
             />
-            {isSelected && selectedEntityIds.length === 1 && (
-              <SelectionHandles
-                x={worldX}
-                y={worldY}
-                width={worldWidth}
-                height={worldHeight}
-              />
-            )}
-          </>
+          </ShapeWithHandles>
         );
 
       case 'text':
         return (
-          <g key={shape.id} {...commonProps}>
+          <ShapeWithHandles
+            shape={shape}
+            isSelected={isSelected}
+            worldX={worldX}
+            worldY={worldY}
+            worldWidth={worldWidth}
+            worldHeight={worldHeight}
+            rotation={rotation}
+            commonProps={commonProps}
+          >
             <rect
-              x={worldX}
-              y={worldY}
+              x={0}
+              y={0}
               width={worldWidth}
               height={worldHeight}
               fill="transparent"
@@ -102,8 +112,8 @@ export const ShapeRenderer: React.FC<ShapeRendererProps> = ({
               strokeDasharray={isSelected ? '5,5' : 'none'}
             />
             <text
-              x={worldX + 8}
-              y={worldY + worldHeight / 2 + 4}
+              x={8}
+              y={worldHeight / 2 + 4}
               fontSize={worldFontSize}
               fontFamily={shape.fontFamily}
               fill={shape.fill}
@@ -111,15 +121,7 @@ export const ShapeRenderer: React.FC<ShapeRendererProps> = ({
             >
               {shape.text || 'Text'}
             </text>
-            {isSelected && selectedEntityIds.length === 1 && (
-              <SelectionHandles
-                x={worldX}
-                y={worldY}
-                width={worldWidth}
-                height={worldHeight}
-              />
-            )}
-          </g>
+          </ShapeWithHandles>
         );
 
       default:
@@ -370,24 +372,121 @@ const renderConnector = (connector: Connector, commonProps: any) => {
   }
 };
 
+interface ShapeWithHandlesProps {
+  shape: Shape;
+  isSelected: boolean;
+  worldX: number;
+  worldY: number;
+  worldWidth: number;
+  worldHeight: number;
+  rotation: number;
+  commonProps: any;
+  children: React.ReactNode;
+}
+
 interface SelectionHandlesProps {
   x: number;
   y: number;
   width: number;
   height: number;
+  rotation?: number;
 }
 
 const HANDLE_SIZE = 6;
+
+const ShapeWithHandles: React.FC<ShapeWithHandlesProps> = ({
+  shape,
+  isSelected,
+  worldX,
+  worldY,
+  worldWidth,
+  worldHeight,
+  rotation,
+  commonProps,
+  children,
+}) => {
+  const { selectedEntityIds } = useCanvas();
+
+  // Create the transform for the shape content
+  // For circles, we only need to translate to center and rotate
+  // For rectangles and text, we need the full transform
+  const isCircle = shape.type === 'circle';
+  const transform = isCircle
+    ? `translate(${worldX + worldWidth / 2}, ${worldY + worldHeight / 2}) rotate(${rotation})`
+    : `translate(${worldX + worldWidth / 2}, ${worldY + worldHeight / 2}) rotate(${rotation}) translate(${-worldWidth / 2}, ${-worldHeight / 2})`;
+
+  return (
+    <g key={shape.id} {...commonProps}>
+      {/* Shape content with rotation */}
+      <g transform={transform}>{children}</g>
+
+      {/* Selection handles - only show if selected and single selection */}
+      {isSelected && selectedEntityIds.length === 1 && (
+        <SelectionHandles
+          x={worldX}
+          y={worldY}
+          width={worldWidth}
+          height={worldHeight}
+          rotation={rotation}
+        />
+      )}
+    </g>
+  );
+};
 
 const SelectionHandles: React.FC<SelectionHandlesProps> = ({
   x,
   y,
   width,
   height,
+  rotation = 0,
 }) => {
+  const {
+    setIsRotating,
+    setIsResizing,
+    isRotating,
+    rotateShape,
+    selectedEntityIds,
+  } = useCanvas();
+  const handleContainerRef = useRef<SVGRectElement>(null);
+  const initialAngleRef = useRef<number>(0);
+  const initialMouseAngleRef = useRef<number>(0);
   const half = HANDLE_SIZE / 2;
   const cx = x + width / 2;
   const cy = y + height / 2;
+
+  // Handle global mouse move for rotation
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (
+        isRotating &&
+        handleContainerRef.current &&
+        selectedEntityIds.length === 1
+      ) {
+        const rect = handleContainerRef.current.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+
+        const currentMouseAngle =
+          (Math.atan2(e.clientY - centerY, e.clientX - centerX) * 180) /
+          Math.PI;
+        const angleDelta = currentMouseAngle - initialMouseAngleRef.current;
+        const newRotation = initialAngleRef.current + angleDelta;
+
+        rotateShape(selectedEntityIds[0], newRotation);
+      }
+    };
+
+    if (isRotating) {
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', () => setIsRotating(false));
+    }
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', () => setIsRotating(false));
+    };
+  }, [isRotating, selectedEntityIds, rotateShape, setIsRotating]);
 
   const handles = [
     { key: 'nw', x: x - half, y: y - half },
@@ -401,7 +500,11 @@ const SelectionHandles: React.FC<SelectionHandlesProps> = ({
   ];
 
   return (
-    <g pointerEvents="none">
+    <g
+      pointerEvents="none"
+      ref={handleContainerRef}
+      transform={`translate(${cx}, ${cy}) rotate(${rotation}) translate(${-cx}, ${-cy})`}
+    >
       <rect
         x={x}
         y={y}
@@ -414,6 +517,14 @@ const SelectionHandles: React.FC<SelectionHandlesProps> = ({
       />
       {handles.map(h => (
         <rect
+          onMouseDown={e => {
+            e.stopPropagation();
+            setIsResizing(true);
+          }}
+          onMouseUp={e => {
+            e.stopPropagation();
+            setIsResizing(false);
+          }}
           key={h.key}
           x={h.x}
           y={h.y}
@@ -436,6 +547,22 @@ const SelectionHandles: React.FC<SelectionHandlesProps> = ({
         strokeWidth={1}
       />
       <circle
+        onMouseDown={e => {
+          e.stopPropagation();
+          if (handleContainerRef.current && selectedEntityIds.length === 1) {
+            const rect = handleContainerRef.current.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+
+            // Store initial values
+            initialAngleRef.current = rotation;
+            initialMouseAngleRef.current =
+              (Math.atan2(e.clientY - centerY, e.clientX - centerX) * 180) /
+              Math.PI;
+
+            setIsRotating(true);
+          }
+        }}
         cx={cx}
         cy={y - 16}
         r={6}

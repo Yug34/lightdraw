@@ -20,6 +20,7 @@ export interface Shape {
   text?: string;
   fontSize?: number;
   fontFamily?: string;
+  rotation?: number; // Rotation in degrees
 }
 
 export interface Connector {
@@ -84,6 +85,7 @@ export interface CanvasState {
   selectEntities: (ids: string[]) => void;
   clearSelection: () => void;
   moveShape: (id: string, deltaX: number, deltaY: number) => void;
+  rotateShape: (id: string, rotation: number) => void;
   setToolMode: (mode: ToolMode) => void;
   clearToolMode: () => void;
   setPendingConnectorStart: (point: Point | null) => void;
@@ -242,6 +244,21 @@ export const useCanvasStore = create<CanvasState>()(
           shape.id === id
             ? { ...shape, x: shape.x + deltaX, y: shape.y + deltaY }
             : shape
+        ),
+      })),
+
+    rotateShape: (id, rotation) =>
+      set(state => ({
+        history: [
+          ...state.history,
+          {
+            shapes: state.shapes.map(s => ({ ...s })),
+            connectors: state.connectors.map(c => ({ ...c })),
+          },
+        ],
+        canUndo: true,
+        shapes: state.shapes.map(shape =>
+          shape.id === id ? { ...shape, rotation } : shape
         ),
       })),
 
