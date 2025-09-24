@@ -16,10 +16,18 @@ export const useCanvas = (options: UseCanvasOptions = {}) => {
 
   const svgRef = useRef<SVGSVGElement>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [isDraggingShape, setIsDraggingShape] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [lastPan, setLastPan] = useState({ x: 0, y: 0 });
   const [isRotating, setIsRotating] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
+  const initialMouseWorldRef = useRef<{ x: number; y: number } | null>(null);
+  const initialShapePositionsRef = useRef<
+    Record<string, { x: number; y: number }>
+  >({});
+  const initialMouseClientRef = useRef<{ x: number; y: number } | null>(null);
+  const dragInitiatedRef = useRef(false);
+  const clickSuppressedRef = useRef(false);
 
   const {
     viewport,
@@ -35,6 +43,7 @@ export const useCanvas = (options: UseCanvasOptions = {}) => {
     selectEntity,
     selectEntities,
     clearSelection,
+    updateShape,
     placeShapeAtPosition,
     placeConnectorAtPosition,
     setPendingConnectorStart,
@@ -183,6 +192,50 @@ export const useCanvas = (options: UseCanvasOptions = {}) => {
     ]
   );
 
+  const handleShapeMouseDown = useCallback(
+    (e: React.MouseEvent, entityId: string) => {
+      // ignore when resizing or rotating
+      if (isRotating || isResizing) return;
+
+      e.stopPropagation();
+      e.preventDefault();
+
+      // Prepare to possibly drag; do not change selection yet
+      const rect = svgRef.current?.getBoundingClientRect();
+      if (!rect) return;
+      const screenX = e.clientX - rect.left;
+      const screenY = e.clientY - rect.top;
+      const worldX = viewport.x + screenX / viewport.zoom;
+      const worldY = viewport.y + screenY / viewport.zoom;
+      initialMouseWorldRef.current = { x: worldX, y: worldY };
+      initialMouseClientRef.current = { x: e.clientX, y: e.clientY };
+      dragInitiatedRef.current = false;
+      clickSuppressedRef.current = false;
+
+      // dragging all selected shapes
+      const idsToDrag = selectedEntityIds.includes(entityId)
+        ? selectedEntityIds
+        : [entityId];
+
+      // snapshot initial positions
+      const pos: Record<string, { x: number; y: number }> = {};
+      (shapes || []).forEach(s => {
+        if (idsToDrag.includes(s.id)) pos[s.id] = { x: s.x, y: s.y };
+      });
+      initialShapePositionsRef.current = pos;
+      setIsDraggingShape(true);
+    },
+    [
+      isRotating,
+      isResizing,
+      selectedEntityIds,
+      viewport.x,
+      viewport.y,
+      viewport.zoom,
+      shapes,
+    ]
+  );
+
   const handleMouseMove = useCallback(
     (e: React.MouseEvent) => {
       if (isDragging && enablePan) {
@@ -195,13 +248,62 @@ export const useCanvas = (options: UseCanvasOptions = {}) => {
 
         setViewport({ x: lastPan.x - worldDeltaX, y: lastPan.y - worldDeltaY });
       }
+      if (isDraggingShape && initialMouseWorldRef.current) {
+        // drag threshold to distinguish click vs drag
+        const startClient = initialMouseClientRef.current;
+        if (!startClient) return;
+        const pixelDx = e.clientX - startClient.x;
+        const pixelDy = e.clientY - startClient.y;
+        const movedPixels = Math.hypot(pixelDx, pixelDy);
+        const threshold = 3;
+        if (!dragInitiatedRef.current && movedPixels < threshold) {
+          return;
+        }
+        if (!dragInitiatedRef.current) {
+          dragInitiatedRef.current = true;
+          clickSuppressedRef.current = true;
+        }
+        const rect = svgRef.current?.getBoundingClientRect();
+        if (!rect) return;
+        const screenX = e.clientX - rect.left;
+        const screenY = e.clientY - rect.top;
+        const worldX = viewport.x + screenX / viewport.zoom;
+        const worldY = viewport.y + screenY / viewport.zoom;
+        const dx = worldX - initialMouseWorldRef.current.x;
+        const dy = worldY - initialMouseWorldRef.current.y;
+
+        const ids = Object.keys(initialShapePositionsRef.current || {});
+        ids.forEach(id => {
+          const startPos = initialShapePositionsRef.current[id];
+          if (!startPos) return;
+          updateShape(id, { x: startPos.x + dx, y: startPos.y + dy });
+        });
+      }
     },
-    [isDragging, dragStart, lastPan, enablePan, setViewport, viewport.zoom]
+    [
+      isDragging,
+      dragStart,
+      lastPan,
+      enablePan,
+      setViewport,
+      viewport.zoom,
+      isDraggingShape,
+      viewport.x,
+      viewport.y,
+      updateShape,
+    ]
   );
 
   const handleMouseUp = useCallback(() => {
     setIsDragging(false);
-  }, []);
+    if (isDraggingShape) {
+      setIsDraggingShape(false);
+      initialMouseWorldRef.current = null;
+      initialMouseClientRef.current = null;
+      initialShapePositionsRef.current = {};
+      dragInitiatedRef.current = false;
+    }
+  }, [isDraggingShape]);
 
   // Update document cursor during resize operations
   useEffect(() => {
@@ -218,6 +320,10 @@ export const useCanvas = (options: UseCanvasOptions = {}) => {
       if (!enableSelection) return;
 
       e.stopPropagation();
+      if (clickSuppressedRef.current) {
+        clickSuppressedRef.current = false;
+        return;
+      }
 
       // multi select
       if (e.ctrlKey || e.metaKey) {
@@ -237,6 +343,7 @@ export const useCanvas = (options: UseCanvasOptions = {}) => {
   return {
     svgRef,
     isDragging,
+    isDraggingShape,
     viewport,
     canvasSize,
     shapes,
@@ -247,6 +354,7 @@ export const useCanvas = (options: UseCanvasOptions = {}) => {
     handleMouseMove,
     handleMouseUp,
     handleShapeClick,
+    handleShapeMouseDown,
     isRotating,
     setIsRotating,
     isResizing,

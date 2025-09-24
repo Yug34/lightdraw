@@ -6,6 +6,7 @@ interface ShapeRendererProps {
   entity: Shape | Connector;
   isSelected: boolean;
   onClick: (e: React.MouseEvent, shapeId: string) => void;
+  onMouseDown?: (e: React.MouseEvent, shapeId: string) => void;
   type: 'shape' | 'connector';
 }
 
@@ -13,10 +14,13 @@ export const ShapeRenderer: React.FC<ShapeRendererProps> = ({
   entity,
   isSelected,
   onClick,
+  onMouseDown,
   type,
 }) => {
   const commonProps = {
     onClick: (e: React.MouseEvent) => onClick(e, entity.id),
+    onMouseDown: (e: React.MouseEvent) =>
+      onMouseDown && onMouseDown(e, entity.id),
     style: {
       cursor: 'pointer',
       filter: isSelected

@@ -21,6 +21,7 @@ export const Canvas: React.FC<CanvasProps> = () => {
     handleMouseMove,
     handleMouseUp,
     handleShapeClick,
+    handleShapeMouseDown,
   } = useCanvas();
 
   const { loadPersistedState } = useCanvasStore();
@@ -38,6 +39,7 @@ export const Canvas: React.FC<CanvasProps> = () => {
         entity={shape}
         isSelected={isSelected}
         onClick={handleShapeClick}
+        onMouseDown={handleShapeMouseDown}
         type="shape"
       />
     );
@@ -51,6 +53,7 @@ export const Canvas: React.FC<CanvasProps> = () => {
         entity={connector}
         isSelected={isSelected}
         onClick={handleShapeClick}
+        onMouseDown={handleShapeMouseDown}
         type="connector"
       />
     );
