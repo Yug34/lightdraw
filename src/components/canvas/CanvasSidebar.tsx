@@ -20,15 +20,14 @@ export const CanvasSidebarTrigger = () => {
 
   return (
     <Button
-      className="cursor-pointer absolute top-1/2 -translate-y-1/2 z-[100] bg-white border border-gray-200 border-l-none"
+      className="w-6 h-12 cursor-pointer absolute top-1/2 -translate-y-1/2 bg-white border-3 border-l-0 border-gray-300 rounded-l-none"
       variant="outline"
-      size="icon"
       onClick={toggleSidebar}
     >
       {state === 'expanded' ? (
-        <ChevronLeftIcon className="w-4 h-4 cursor-pointer" />
+        <ChevronLeftIcon className="w-6 h-6 cursor-pointer" />
       ) : (
-        <ChevronRightIcon className="w-4 h-4 cursor-pointer" />
+        <ChevronRightIcon className="w-6 h-6 cursor-pointer" />
       )}
     </Button>
   );

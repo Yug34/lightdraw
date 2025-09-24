@@ -1,5 +1,4 @@
 import { Toolbar } from '@/components/Toolbar';
-import { CanvasInfo } from '@/components/canvas/CanvasInfo';
 import { GridBackground } from '@/components/canvas/GridBackground';
 import { ShapeRenderer } from '@/components/canvas/ShapeRenderer';
 import { useCanvas } from '@/hooks';
@@ -15,6 +14,21 @@ import React from 'react';
 interface CanvasProps {}
 
 export const Canvas: React.FC<CanvasProps> = () => {
+  const [sidebarOpen, setSidebarOpen] = React.useState<boolean>(() => {
+    try {
+      const stored = localStorage.getItem('sidebar:open');
+      return stored === null ? true : stored === 'true';
+    } catch {
+      return true;
+    }
+  });
+
+  React.useEffect(() => {
+    try {
+      localStorage.setItem('sidebar:open', String(sidebarOpen));
+    } catch {}
+  }, [sidebarOpen]);
+
   const {
     svgRef,
     viewport,
@@ -65,7 +79,7 @@ export const Canvas: React.FC<CanvasProps> = () => {
   };
 
   return (
-    <SidebarProvider defaultOpen={false}>
+    <SidebarProvider open={sidebarOpen} onOpenChange={setSidebarOpen}>
       <CanvasSidebar />
       <div className={`relative overflow-hidden w-full h-full`}>
         <svg
