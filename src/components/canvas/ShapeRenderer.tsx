@@ -492,7 +492,35 @@ const SelectionHandles: React.FC<SelectionHandlesProps> = ({
         initialResizeDataRef.current &&
         selectedEntityIds.length === 1
       ) {
-        // todo: implement resize
+        // Implement resize for 's', 'e', and 'se' without rotation handling
+        const { width, height, mouseX, mouseY, handle } =
+          initialResizeDataRef.current;
+
+        // Convert screen-space movement to world-space based on zoom
+        const deltaClientX = e.clientX - mouseX;
+        const deltaClientY = e.clientY - mouseY;
+        const worldDeltaX = deltaClientX / viewport.zoom;
+        const worldDeltaY = deltaClientY / viewport.zoom;
+
+        let newWidth = width;
+        let newHeight = height;
+        let deltaX = 0;
+        let deltaY = 0;
+
+        if (handle === 'e') {
+          newWidth = width + worldDeltaX;
+        } else if (handle === 's') {
+          newHeight = height + worldDeltaY;
+        } else if (handle === 'se') {
+          newWidth = width + worldDeltaX;
+          newHeight = height + worldDeltaY;
+        } else {
+          // Other handles not handled here
+          return;
+        }
+
+        // Apply the resize. For east/south edges, top-left stays fixed (deltaX/Y = 0)
+        resizeShape(selectedEntityIds[0], newWidth, newHeight, deltaX, deltaY);
       }
     };
 
