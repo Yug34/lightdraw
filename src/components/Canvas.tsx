@@ -10,10 +10,12 @@ import {
   CanvasSidebarTrigger,
 } from '@/components/canvas/CanvasSidebar';
 import React from 'react';
+import { cn } from '@/lib/utils';
 
 interface CanvasProps {}
 
 export const Canvas: React.FC<CanvasProps> = () => {
+  const { theme } = useCanvasStore();
   const [sidebarOpen, setSidebarOpen] = React.useState<boolean>(() => {
     try {
       const stored = localStorage.getItem('sidebar:open');
@@ -81,16 +83,24 @@ export const Canvas: React.FC<CanvasProps> = () => {
   return (
     <SidebarProvider open={sidebarOpen} onOpenChange={setSidebarOpen}>
       <CanvasSidebar />
-      <div className={`relative overflow-hidden w-full h-full`}>
+      <div
+        className={cn(
+          'relative overflow-hidden w-full h-full',
+          theme === 'dark' ? 'bg-slate-900' : 'bg-white'
+        )}
+      >
         <svg
-          className="w-screen h-screen"
+          className={cn(
+            'w-screen h-screen',
+            theme === 'dark' ? 'text-white' : 'text-black'
+          )}
           ref={svgRef}
           viewBox={`${viewport.x} ${viewport.y} ${canvasSize.width / viewport.zoom} ${canvasSize.height / viewport.zoom}`}
           onMouseDown={handleMouseDown}
           onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUp}
           style={{
-            background: '#f8fafc',
+            background: theme === 'dark' ? '#0b1220' : '#f8fafc',
           }}
         >
           <GridBackground />

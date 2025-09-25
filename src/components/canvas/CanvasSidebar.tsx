@@ -17,10 +17,15 @@ import { ChevronLeftIcon, ChevronRightIcon } from 'lucide-react';
 
 export const CanvasSidebarTrigger = () => {
   const { toggleSidebar, state } = useSidebar();
+  const { theme } = useCanvasStore();
 
   return (
     <Button
-      className="w-6 h-12 cursor-pointer absolute top-1/2 -translate-y-1/2 bg-white border-3 border-l-0 border-gray-300 rounded-l-none"
+      className={`w-6 h-12 cursor-pointer absolute top-1/2 -translate-y-1/2 border-3 border-l-0 rounded-l-none ${
+        theme === 'dark'
+          ? 'bg-slate-800 border-white/10 text-white'
+          : 'bg-white border-gray-300'
+      }`}
       variant="outline"
       onClick={toggleSidebar}
     >
@@ -34,7 +39,8 @@ export const CanvasSidebarTrigger = () => {
 };
 
 export const CanvasSidebar = () => {
-  const { shapes, connectors, selectedEntityIds } = useCanvasStore();
+  const { shapes, connectors, selectedEntityIds, theme, setTheme } =
+    useCanvasStore();
 
   const selectedId = selectedEntityIds[0];
   const selectedShape = (shapes || []).find(s => s.id === selectedId);
@@ -48,8 +54,30 @@ export const CanvasSidebar = () => {
           <SidebarGroupLabel>Selection</SidebarGroupLabel>
           <SidebarGroupContent>
             {selectedEntityIds.length === 0 && (
-              <div className="text-sm text-muted-foreground px-1 py-1">
-                No selection. Click a shape to see details.
+              <div className="space-y-3 px-1 py-1">
+                <div className="text-sm text-muted-foreground">
+                  No selection. Click a shape to see details.
+                </div>
+                <Separator />
+                <div className="space-y-2">
+                  <div className="text-sm font-medium">Theme</div>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant={theme === 'light' ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => setTheme('light')}
+                    >
+                      Light
+                    </Button>
+                    <Button
+                      variant={theme === 'dark' ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => setTheme('dark')}
+                    >
+                      Dark
+                    </Button>
+                  </div>
+                </div>
               </div>
             )}
 
@@ -67,7 +95,10 @@ export const CanvasSidebar = () => {
                     <Label htmlFor="shape-type">Type</Label>
                     <Input
                       id="shape-type"
-                      value={selectedShape.type}
+                      value={
+                        selectedShape.type.toUpperCase().charAt(0) +
+                        selectedShape.type.slice(1)
+                      }
                       readOnly
                     />
                   </div>

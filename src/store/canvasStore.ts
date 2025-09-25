@@ -2,6 +2,28 @@ import { persistenceService } from '@/lib/persistence';
 import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
 
+// Theme localStorage helpers
+const THEME_STORAGE_KEY = 'lightdraw-theme';
+
+const getStoredTheme = (): 'light' | 'dark' => {
+  if (typeof window === 'undefined') return 'light';
+  try {
+    const stored = localStorage.getItem(THEME_STORAGE_KEY);
+    return stored === 'light' || stored === 'dark' ? stored : 'light';
+  } catch {
+    return 'light';
+  }
+};
+
+const setStoredTheme = (theme: 'light' | 'dark'): void => {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.setItem(THEME_STORAGE_KEY, theme);
+  } catch {
+    // Silently fail if localStorage is not available
+  }
+};
+
 export interface Point {
   x: number;
   y: number;
@@ -55,6 +77,7 @@ export type ToolMode =
   | 'dotted';
 
 export interface CanvasState {
+  theme: 'light' | 'dark';
   viewport: {
     x: number;
     y: number;
@@ -95,6 +118,7 @@ export interface CanvasState {
   ) => void;
   setToolMode: (mode: ToolMode) => void;
   clearToolMode: () => void;
+  setTheme: (theme: 'light' | 'dark') => void;
   setPendingConnectorStart: (point: Point | null) => void;
   placeShapeAtPosition: (x: number, y: number) => void;
   placeConnectorAtPosition: (
@@ -120,6 +144,7 @@ export interface CanvasSnapshot {
 
 export const useCanvasStore = create<CanvasState>()(
   subscribeWithSelector((set, get) => ({
+    theme: getStoredTheme(),
     viewport: {
       x: 0,
       y: 0,
@@ -297,6 +322,11 @@ export const useCanvasStore = create<CanvasState>()(
     setToolMode: mode => set({ toolMode: mode }),
 
     clearToolMode: () => set({ toolMode: 'none' }),
+
+    setTheme: theme => {
+      setStoredTheme(theme);
+      set({ theme });
+    },
 
     setPendingConnectorStart: point => set({ pendingConnectorStart: point }),
 

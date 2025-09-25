@@ -5,6 +5,7 @@ import { useCanvasStore } from '@/store/canvasStore';
 import React from 'react';
 
 export const Toolbar: React.FC = () => {
+  const { theme } = useCanvasStore();
   const {
     shapes,
     connectors,
@@ -87,11 +88,19 @@ export const Toolbar: React.FC = () => {
   ];
 
   return (
-    <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-white border border-gray-200 rounded-lg px-4 py-3 shadow-lg max-w-4xl">
+    <div
+      className={`absolute bottom-4 left-1/2 transform -translate-x-1/2 rounded-lg px-4 py-3 shadow-lg max-w-4xl border ${
+        theme === 'dark'
+          ? 'bg-slate-800 border-white/10 text-white'
+          : 'bg-white border-gray-200'
+      }`}
+    >
       <div className="flex flex-col space-y-3">
         {/* Shapes Row */}
         <div className="flex items-center space-x-2">
-          <span className="text-sm font-medium text-gray-700 min-w-[60px]">
+          <span
+            className={`text-sm font-medium min-w-[60px] ${theme === 'dark' ? 'text-white/90' : 'text-gray-700'}`}
+          >
             Shapes:
           </span>
           {shapeButtons.map(button => (
@@ -109,7 +118,9 @@ export const Toolbar: React.FC = () => {
 
         {/* Connectors Row */}
         <div className="flex items-center space-x-2">
-          <span className="text-sm font-medium text-gray-700 min-w-[80px]">
+          <span
+            className={`text-sm font-medium min-w-[80px] ${theme === 'dark' ? 'text-white/90' : 'text-gray-700'}`}
+          >
             Connectors:
           </span>
           {connectorButtons.map(button => (
@@ -129,7 +140,11 @@ export const Toolbar: React.FC = () => {
         {/* Actions Row */}
         <div className="flex items-center space-x-3">
           <Separator orientation="vertical" className="h-6" />
-          <span className="text-sm font-medium text-gray-700">Actions:</span>
+          <span
+            className={`text-sm font-medium ${theme === 'dark' ? 'text-white/90' : 'text-gray-700'}`}
+          >
+            Actions:
+          </span>
           <Button
             onClick={undo}
             variant="outline"
@@ -157,7 +172,9 @@ export const Toolbar: React.FC = () => {
             Clear All
           </Button>
           <Separator orientation="vertical" className="h-6" />
-          <div className="text-sm text-gray-500">
+          <div
+            className={`text-sm ${theme === 'dark' ? 'text-white/60' : 'text-gray-500'}`}
+          >
             Total shapes: {shapes.length + connectors.length}
           </div>
         </div>

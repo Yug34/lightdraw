@@ -8,7 +8,7 @@ interface GridBackgroundProps {
 
 export const GridBackground: React.FC<GridBackgroundProps> = ({
   gridSize = 20,
-  strokeColor = '#000000',
+  strokeColor = 'currentColor',
   strokeWidth = 0.5,
 }) => {
   return (

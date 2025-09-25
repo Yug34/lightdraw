@@ -2,10 +2,12 @@ import { Canvas } from '@/components/Canvas';
 import { Header } from '@/components/layout';
 import { useCanvasKeyboardShortcuts } from '@/hooks';
 import { useEffect } from 'react';
+import { useCanvasStore } from '@/store/canvasStore';
 
 function App() {
   // Enable keyboard shortcuts
   useCanvasKeyboardShortcuts();
+  const { theme } = useCanvasStore();
 
   useEffect(() => {
     // Initialize WASM module
@@ -20,6 +22,15 @@ function App() {
       }
     })();
   }, []);
+
+  useEffect(() => {
+    const root = document.documentElement;
+    if (theme === 'dark') {
+      root.classList.add('dark');
+    } else {
+      root.classList.remove('dark');
+    }
+  }, [theme]);
 
   return (
     <div className="flex flex-col w-screen h-screen">
