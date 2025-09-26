@@ -374,6 +374,19 @@ export const useCanvas = (options: UseCanvasOptions = {}) => {
     [selectEntity, selectEntities, selectedEntityIds, enableSelection]
   );
 
+  const updateShapeColor = useCallback(
+    (id: string, color: string) => {
+      updateShape(id, { fill: color, stroke: color });
+    },
+    [updateShape]
+  );
+  const updateConnectorColor = useCallback(
+    (id: string, color: string) => {
+      updateConnector(id, { stroke: color });
+    },
+    [updateConnector]
+  );
+
   return {
     svgRef,
     isDragging,
@@ -396,5 +409,7 @@ export const useCanvas = (options: UseCanvasOptions = {}) => {
     rotateShape,
     resizeShape,
     theme,
+    updateShapeColor,
+    updateConnectorColor,
   };
 };

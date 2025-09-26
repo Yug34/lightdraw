@@ -14,6 +14,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useCanvasStore } from '@/store/canvasStore';
 import { ChevronLeftIcon, ChevronRightIcon } from 'lucide-react';
+import ColorPicker from '@/components/ColorPicker';
 
 export const CanvasSidebarTrigger = () => {
   const { toggleSidebar, state } = useSidebar();
@@ -50,6 +51,9 @@ export const CanvasSidebar = () => {
     <Sidebar>
       <SidebarHeader />
       <SidebarContent>
+        <div className="w-full min-h-[300px]">
+          <ColorPicker />
+        </div>
         <SidebarGroup>
           <SidebarGroupLabel>Selection</SidebarGroupLabel>
           <SidebarGroupContent>
