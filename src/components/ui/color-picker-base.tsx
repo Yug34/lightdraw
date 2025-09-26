@@ -1,6 +1,6 @@
-import Color, { type ColorLike } from 'color';
+import Color from 'color';
 import { PipetteIcon } from 'lucide-react';
-import { Slider } from 'radix-ui';
+import * as Slider from '@radix-ui/react-slider';
 import {
   type ComponentProps,
   createContext,
@@ -198,7 +198,7 @@ export const ColorPickerHue = ({
     <Slider.Root
       className={cn('relative flex h-4 w-full touch-none', className)}
       max={360}
-      onValueChange={([hue]) => setHue(hue)}
+      onValueChange={([hue]: number[]) => setHue(hue)}
       step={1}
       value={[hue]}
       {...props}

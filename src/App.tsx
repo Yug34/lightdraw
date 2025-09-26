@@ -1,5 +1,4 @@
 import { Canvas } from '@/components/Canvas';
-import { Header } from '@/components/layout';
 import { useCanvasKeyboardShortcuts } from '@/hooks';
 import { useEffect } from 'react';
 import { useCanvasStore } from '@/store/canvasStore';

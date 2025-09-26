@@ -8,7 +8,6 @@ import {
   ColorPickerSelection,
 } from '@/components/ui/color-picker-base';
 import { useCanvas } from '@/hooks';
-import type { ColorLike } from 'color';
 
 const ColorPicker = () => {
   const {
