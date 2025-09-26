@@ -46,6 +46,8 @@ const renderShape = (shape: Shape, isSelected: boolean, commonProps: any) => {
   const worldWidth = shape.width;
   const worldHeight = shape.height;
   const worldFontSize = shape.fontSize || 16;
+  const fill = shape.fill;
+  const stroke = shape.stroke;
 
   switch (shape.type) {
     case 'rectangle':
@@ -66,8 +68,8 @@ const renderShape = (shape: Shape, isSelected: boolean, commonProps: any) => {
             y={0}
             width={worldWidth}
             height={worldHeight}
-            fill={shape.fill}
-            stroke={shape.stroke}
+            fill={fill}
+            stroke={stroke}
             strokeWidth={worldStrokeWidth}
             {...commonProps}
           />
@@ -92,8 +94,8 @@ const renderShape = (shape: Shape, isSelected: boolean, commonProps: any) => {
             cx={0}
             cy={0}
             r={worldRadius}
-            fill={shape.fill}
-            stroke={shape.stroke}
+            fill={fill}
+            stroke={stroke}
             strokeWidth={worldStrokeWidth}
             {...commonProps}
           />
@@ -118,7 +120,7 @@ const renderShape = (shape: Shape, isSelected: boolean, commonProps: any) => {
             width={worldWidth}
             height={worldHeight}
             fill="transparent"
-            stroke={isSelected ? shape.stroke : 'transparent'}
+            stroke={isSelected ? stroke : 'transparent'}
             strokeWidth={worldStrokeWidth}
             strokeDasharray={isSelected ? '5,5' : 'none'}
           />
@@ -127,7 +129,7 @@ const renderShape = (shape: Shape, isSelected: boolean, commonProps: any) => {
             y={worldHeight / 2 + 4}
             fontSize={worldFontSize}
             fontFamily={shape.fontFamily}
-            fill={shape.fill}
+            fill={fill}
             dominantBaseline="middle"
           >
             {shape.text || 'Text'}
@@ -141,8 +143,9 @@ const renderShape = (shape: Shape, isSelected: boolean, commonProps: any) => {
 };
 
 const renderConnector = (connector: Connector, commonProps: any) => {
+  const { theme } = useCanvas();
   const strokeWidth = connector.strokeWidth || 2;
-  const stroke = connector.stroke || '#000000';
+  const stroke = connector.stroke || (theme === 'dark' ? '#ffffff' : '#000000');
 
   // Calculate common values for all connector types that need arrowheads
   const dx = connector.targetX - connector.x;

@@ -9,14 +9,14 @@ import {
   CanvasSidebar,
   CanvasSidebarTrigger,
 } from '@/components/canvas/CanvasSidebar';
-import React from 'react';
 import { cn } from '@/lib/utils';
+import { useState, useEffect } from 'react';
 
 interface CanvasProps {}
 
 export const Canvas: React.FC<CanvasProps> = () => {
   const { theme } = useCanvasStore();
-  const [sidebarOpen, setSidebarOpen] = React.useState<boolean>(() => {
+  const [sidebarOpen, setSidebarOpen] = useState<boolean>(() => {
     try {
       const stored = localStorage.getItem('sidebar:open');
       return stored === null ? true : stored === 'true';
@@ -25,7 +25,7 @@ export const Canvas: React.FC<CanvasProps> = () => {
     }
   });
 
-  React.useEffect(() => {
+  useEffect(() => {
     try {
       localStorage.setItem('sidebar:open', String(sidebarOpen));
     } catch {}
@@ -47,7 +47,7 @@ export const Canvas: React.FC<CanvasProps> = () => {
 
   const { loadPersistedState } = useCanvasStore();
 
-  React.useEffect(() => {
+  useEffect(() => {
     // Load persisted state on mount
     loadPersistedState();
   }, [loadPersistedState]);

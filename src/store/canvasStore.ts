@@ -207,8 +207,6 @@ export const useCanvasStore = create<CanvasState>()(
       const id = `connector-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
       const connector: Connector = {
         id,
-        fill: '#000000',
-        stroke: '#000000',
         strokeWidth: 2,
         ...connectorData,
       };
@@ -450,8 +448,6 @@ export const useCanvasStore = create<CanvasState>()(
         targetX,
         targetY,
         type: connectorType,
-        fill: '#000000',
-        stroke: '#000000',
         strokeWidth: 2,
         ...additionalProps,
       };

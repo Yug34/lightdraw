@@ -50,6 +50,7 @@ export const useCanvas = (options: UseCanvasOptions = {}) => {
     setPendingConnectorStart,
     rotateShape,
     resizeShape,
+    theme,
   } = useCanvasStore();
 
   // Update canvas size on mount and resize
@@ -394,5 +395,6 @@ export const useCanvas = (options: UseCanvasOptions = {}) => {
     setIsResizing,
     rotateShape,
     resizeShape,
+    theme,
   };
 };
