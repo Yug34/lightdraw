@@ -144,6 +144,17 @@ const renderConnector = (connector: Connector, commonProps: any) => {
   const strokeWidth = connector.strokeWidth || 2;
   const stroke = connector.stroke || '#000000';
 
+  // Calculate common values for all connector types that need arrowheads
+  const dx = connector.targetX - connector.x;
+  const dy = connector.targetY - connector.y;
+  const length = Math.sqrt(dx * dx + dy * dy);
+  const unitX = dx / length;
+  const unitY = dy / length;
+  const arrowheadX = connector.targetX - unitX * 10; // 10px from end
+  const arrowheadY = connector.targetY - unitY * 10;
+  const startArrowheadX = connector.x + unitX * 10; // 10px from start
+  const startArrowheadY = connector.y + unitY * 10;
+
   switch (connector.type) {
     case 'line':
       return (
@@ -161,14 +172,6 @@ const renderConnector = (connector: Connector, commonProps: any) => {
 
     case 'arrow':
       const arrowMarkerId = `arrowhead-${connector.id}`;
-      // Calculate arrowhead position
-      const dx = connector.targetX - connector.x;
-      const dy = connector.targetY - connector.y;
-      const length = Math.sqrt(dx * dx + dy * dy);
-      const unitX = dx / length;
-      const unitY = dy / length;
-      const arrowheadX = connector.targetX - unitX * 10; // 10px from end
-      const arrowheadY = connector.targetY - unitY * 10;
 
       return (
         <g key={connector.id} {...commonProps}>
@@ -207,16 +210,6 @@ const renderConnector = (connector: Connector, commonProps: any) => {
     case 'double-arrow':
       const doubleArrowStartMarkerId = `arrowhead-start-${connector.id}`;
       const doubleArrowEndMarkerId = `arrowhead-end-${connector.id}`;
-      // Calculate arrowhead positions
-      const doubleDx = connector.targetX - connector.x;
-      const doubleDy = connector.targetY - connector.y;
-      const doubleLength = Math.sqrt(doubleDx * doubleDx + doubleDy * doubleDy);
-      const doubleUnitX = doubleDx / doubleLength;
-      const doubleUnitY = doubleDy / doubleLength;
-      const startArrowheadX = connector.x + doubleUnitX * 10; // 10px from start
-      const startArrowheadY = connector.y + doubleUnitY * 10;
-      const endArrowheadX = connector.targetX - doubleUnitX * 10; // 10px from end
-      const endArrowheadY = connector.targetY - doubleUnitY * 10;
 
       return (
         <g key={connector.id} {...commonProps}>
@@ -263,8 +256,8 @@ const renderConnector = (connector: Connector, commonProps: any) => {
             pointerEvents="all"
           />
           <circle
-            cx={endArrowheadX}
-            cy={endArrowheadY}
+            cx={arrowheadX}
+            cy={arrowheadY}
             r="8"
             fill="transparent"
             pointerEvents="all"
@@ -274,14 +267,6 @@ const renderConnector = (connector: Connector, commonProps: any) => {
 
     case 'dotted':
       const dottedArrowMarkerId = `dotted-arrowhead-${connector.id}`;
-      // Calculate arrowhead position
-      const dottedDx = connector.targetX - connector.x;
-      const dottedDy = connector.targetY - connector.y;
-      const dottedLength = Math.sqrt(dottedDx * dottedDx + dottedDy * dottedDy);
-      const dottedUnitX = dottedDx / dottedLength;
-      const dottedUnitY = dottedDy / dottedLength;
-      const dottedArrowheadX = connector.targetX - dottedUnitX * 10; // 10px from end
-      const dottedArrowheadY = connector.targetY - dottedUnitY * 10;
 
       return (
         <g key={connector.id} {...commonProps}>
@@ -321,8 +306,8 @@ const renderConnector = (connector: Connector, commonProps: any) => {
           />
           {/* Invisible clickable area over arrowhead */}
           <circle
-            cx={dottedArrowheadX}
-            cy={dottedArrowheadY}
+            cx={arrowheadX}
+            cy={arrowheadY}
             r="8"
             fill="transparent"
             pointerEvents="all"
@@ -332,16 +317,6 @@ const renderConnector = (connector: Connector, commonProps: any) => {
 
     default:
       const defaultArrowMarkerId = `default-arrowhead-${connector.id}`;
-      // Calculate arrowhead position
-      const defaultDx = connector.targetX - connector.x;
-      const defaultDy = connector.targetY - connector.y;
-      const defaultLength = Math.sqrt(
-        defaultDx * defaultDx + defaultDy * defaultDy
-      );
-      const defaultUnitX = defaultDx / defaultLength;
-      const defaultUnitY = defaultDy / defaultLength;
-      const defaultArrowheadX = connector.targetX - defaultUnitX * 10; // 10px from end
-      const defaultArrowheadY = connector.targetY - defaultUnitY * 10;
 
       return (
         <g key={connector.id} {...commonProps}>
@@ -368,8 +343,8 @@ const renderConnector = (connector: Connector, commonProps: any) => {
           />
           {/* Invisible clickable area over arrowhead */}
           <circle
-            cx={defaultArrowheadX}
-            cy={defaultArrowheadY}
+            cx={arrowheadX}
+            cy={arrowheadY}
             r="8"
             fill="transparent"
             pointerEvents="all"
