@@ -103,6 +103,7 @@ export interface CanvasState {
   addShape: (shape: Omit<Shape, 'id'>) => void;
   addConnector: (connector: Omit<Connector, 'id'>) => void;
   updateShape: (id: string, updates: Partial<Shape>) => void;
+  updateConnector: (id: string, updates: Partial<Connector>) => void;
   deleteEntity: (id: string) => void;
   selectEntity: (id: string) => void;
   selectEntities: (ids: string[]) => void;
@@ -236,6 +237,21 @@ export const useCanvasStore = create<CanvasState>()(
         canUndo: true,
         shapes: state.shapes.map(shape =>
           shape.id === id ? { ...shape, ...updates } : shape
+        ),
+      })),
+
+    updateConnector: (id, updates) =>
+      set(state => ({
+        history: [
+          ...state.history,
+          {
+            shapes: (state.shapes || []).map(s => ({ ...s })),
+            connectors: (state.connectors || []).map(c => ({ ...c })),
+          },
+        ],
+        canUndo: true,
+        connectors: state.connectors.map(connector =>
+          connector.id === id ? { ...connector, ...updates } : connector
         ),
       })),
 

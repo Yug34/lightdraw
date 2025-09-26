@@ -16,14 +16,14 @@ export const useCanvas = (options: UseCanvasOptions = {}) => {
 
   const svgRef = useRef<SVGSVGElement>(null);
   const [isDragging, setIsDragging] = useState(false);
-  const [isDraggingShape, setIsDraggingShape] = useState(false);
+  const [isDraggingEntity, setIsDraggingEntity] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [lastPan, setLastPan] = useState({ x: 0, y: 0 });
   const [isRotating, setIsRotating] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
   const initialMouseWorldRef = useRef<{ x: number; y: number } | null>(null);
-  const initialShapePositionsRef = useRef<
-    Record<string, { x: number; y: number }>
+  const initialEntityPositionsRef = useRef<
+    Record<string, { x: number; y: number; targetX?: number; targetY?: number }>
   >({});
   const initialMouseClientRef = useRef<{ x: number; y: number } | null>(null);
   const dragInitiatedRef = useRef(false);
@@ -44,6 +44,7 @@ export const useCanvas = (options: UseCanvasOptions = {}) => {
     selectEntities,
     clearSelection,
     updateShape,
+    updateConnector,
     placeShapeAtPosition,
     placeConnectorAtPosition,
     setPendingConnectorStart,
@@ -192,7 +193,7 @@ export const useCanvas = (options: UseCanvasOptions = {}) => {
     ]
   );
 
-  const handleShapeMouseDown = useCallback(
+  const handleEntityMouseDown = useCallback(
     (e: React.MouseEvent, entityId: string) => {
       // ignore when resizing or rotating
       if (isRotating || isResizing) return;
@@ -212,18 +213,35 @@ export const useCanvas = (options: UseCanvasOptions = {}) => {
       dragInitiatedRef.current = false;
       clickSuppressedRef.current = false;
 
-      // dragging all selected shapes
+      // dragging all selected entities
       const idsToDrag = selectedEntityIds.includes(entityId)
         ? selectedEntityIds
         : [entityId];
 
-      // snapshot initial positions
-      const pos: Record<string, { x: number; y: number }> = {};
+      // snapshot initial positions for both shapes and connectors
+      const pos: Record<
+        string,
+        { x: number; y: number; targetX?: number; targetY?: number }
+      > = {};
+
+      // Handle shapes
       (shapes || []).forEach(s => {
         if (idsToDrag.includes(s.id)) pos[s.id] = { x: s.x, y: s.y };
       });
-      initialShapePositionsRef.current = pos;
-      setIsDraggingShape(true);
+
+      // Handle connectors
+      (connectors || []).forEach(c => {
+        if (idsToDrag.includes(c.id))
+          pos[c.id] = {
+            x: c.x,
+            y: c.y,
+            targetX: c.targetX,
+            targetY: c.targetY,
+          };
+      });
+
+      initialEntityPositionsRef.current = pos;
+      setIsDraggingEntity(true);
     },
     [
       isRotating,
@@ -233,6 +251,7 @@ export const useCanvas = (options: UseCanvasOptions = {}) => {
       viewport.y,
       viewport.zoom,
       shapes,
+      connectors,
     ]
   );
 
@@ -248,7 +267,7 @@ export const useCanvas = (options: UseCanvasOptions = {}) => {
 
         setViewport({ x: lastPan.x - worldDeltaX, y: lastPan.y - worldDeltaY });
       }
-      if (isDraggingShape && initialMouseWorldRef.current) {
+      if (isDraggingEntity && initialMouseWorldRef.current) {
         // drag threshold to distinguish click vs drag
         const startClient = initialMouseClientRef.current;
         if (!startClient) return;
@@ -272,11 +291,24 @@ export const useCanvas = (options: UseCanvasOptions = {}) => {
         const dx = worldX - initialMouseWorldRef.current.x;
         const dy = worldY - initialMouseWorldRef.current.y;
 
-        const ids = Object.keys(initialShapePositionsRef.current || {});
+        const ids = Object.keys(initialEntityPositionsRef.current || {});
         ids.forEach(id => {
-          const startPos = initialShapePositionsRef.current[id];
+          const startPos = initialEntityPositionsRef.current[id];
           if (!startPos) return;
-          updateShape(id, { x: startPos.x + dx, y: startPos.y + dy });
+
+          if (
+            startPos.targetX !== undefined &&
+            startPos.targetY !== undefined
+          ) {
+            updateConnector(id, {
+              x: startPos.x + dx,
+              y: startPos.y + dy,
+              targetX: startPos.targetX + dx,
+              targetY: startPos.targetY + dy,
+            });
+          } else {
+            updateShape(id, { x: startPos.x + dx, y: startPos.y + dy });
+          }
         });
       }
     },
@@ -287,23 +319,24 @@ export const useCanvas = (options: UseCanvasOptions = {}) => {
       enablePan,
       setViewport,
       viewport.zoom,
-      isDraggingShape,
+      isDraggingEntity,
       viewport.x,
       viewport.y,
       updateShape,
+      updateConnector,
     ]
   );
 
   const handleMouseUp = useCallback(() => {
     setIsDragging(false);
-    if (isDraggingShape) {
-      setIsDraggingShape(false);
+    if (isDraggingEntity) {
+      setIsDraggingEntity(false);
       initialMouseWorldRef.current = null;
       initialMouseClientRef.current = null;
-      initialShapePositionsRef.current = {};
+      initialEntityPositionsRef.current = {};
       dragInitiatedRef.current = false;
     }
-  }, [isDraggingShape]);
+  }, [isDraggingEntity]);
 
   // Update document cursor during resize operations
   useEffect(() => {
@@ -343,7 +376,7 @@ export const useCanvas = (options: UseCanvasOptions = {}) => {
   return {
     svgRef,
     isDragging,
-    isDraggingShape,
+    isDraggingEntity,
     viewport,
     canvasSize,
     shapes,
@@ -354,7 +387,7 @@ export const useCanvas = (options: UseCanvasOptions = {}) => {
     handleMouseMove,
     handleMouseUp,
     handleShapeClick,
-    handleShapeMouseDown,
+    handleEntityMouseDown,
     isRotating,
     setIsRotating,
     isResizing,
