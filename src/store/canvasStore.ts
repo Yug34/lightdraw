@@ -1,4 +1,5 @@
 import { persistenceService } from '@/lib/persistence';
+import Color from 'color';
 import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
 
@@ -97,13 +98,23 @@ export interface CanvasState {
   toolMode: ToolMode;
   pendingConnectorStart: Point | null;
 
+  selectedColor: Parameters<typeof Color>[0];
+
   setViewport: (viewport: Partial<CanvasState['viewport']>) => void;
   setViewportZoom: (zoom: number) => void;
   setCanvasSize: (size: CanvasState['canvasSize']) => void;
   addShape: (shape: Omit<Shape, 'id'>) => void;
   addConnector: (connector: Omit<Connector, 'id'>) => void;
-  updateShape: (id: string, updates: Partial<Shape>) => void;
-  updateConnector: (id: string, updates: Partial<Connector>) => void;
+  updateShape: (
+    id: string,
+    updates: Partial<Shape>,
+    options?: { recordHistory?: boolean }
+  ) => void;
+  updateConnector: (
+    id: string,
+    updates: Partial<Connector>,
+    options?: { recordHistory?: boolean }
+  ) => void;
   deleteEntity: (id: string) => void;
   selectEntity: (id: string) => void;
   selectEntities: (ids: string[]) => void;
@@ -136,6 +147,7 @@ export interface CanvasState {
   history: CanvasSnapshot[];
   canUndo: boolean;
   undo: () => void;
+  pushHistorySnapshot: (snapshot: CanvasSnapshot) => void;
 }
 
 export interface CanvasSnapshot {
@@ -165,6 +177,20 @@ export const useCanvasStore = create<CanvasState>()(
     isSaving: false,
     history: [],
     canUndo: false,
+
+    selectedColor: '[0, 0, 0, NaN]',
+
+    pushHistorySnapshot: snapshot =>
+      set(state => ({
+        history: [
+          ...state.history,
+          {
+            shapes: (snapshot.shapes || []).map(s => ({ ...s })),
+            connectors: (snapshot.connectors || []).map(c => ({ ...c })),
+          },
+        ],
+        canUndo: true,
+      })),
 
     setViewport: viewport =>
       set(state => ({
@@ -223,35 +249,45 @@ export const useCanvasStore = create<CanvasState>()(
       }));
     },
 
-    updateShape: (id, updates) =>
-      set(state => ({
-        history: [
-          ...state.history,
-          {
-            shapes: (state.shapes || []).map(s => ({ ...s })),
-            connectors: (state.connectors || []).map(c => ({ ...c })),
-          },
-        ],
-        canUndo: true,
-        shapes: state.shapes.map(shape =>
-          shape.id === id ? { ...shape, ...updates } : shape
-        ),
-      })),
+    updateShape: (id, updates, options) =>
+      set(state => {
+        const recordHistory = options?.recordHistory !== false;
+        return {
+          history: recordHistory
+            ? [
+                ...state.history,
+                {
+                  shapes: (state.shapes || []).map(s => ({ ...s })),
+                  connectors: (state.connectors || []).map(c => ({ ...c })),
+                },
+              ]
+            : state.history,
+          canUndo: recordHistory ? true : state.canUndo,
+          shapes: state.shapes.map(shape =>
+            shape.id === id ? { ...shape, ...updates } : shape
+          ),
+        };
+      }),
 
-    updateConnector: (id, updates) =>
-      set(state => ({
-        history: [
-          ...state.history,
-          {
-            shapes: (state.shapes || []).map(s => ({ ...s })),
-            connectors: (state.connectors || []).map(c => ({ ...c })),
-          },
-        ],
-        canUndo: true,
-        connectors: state.connectors.map(connector =>
-          connector.id === id ? { ...connector, ...updates } : connector
-        ),
-      })),
+    updateConnector: (id, updates, options) =>
+      set(state => {
+        const recordHistory = options?.recordHistory !== false;
+        return {
+          history: recordHistory
+            ? [
+                ...state.history,
+                {
+                  shapes: (state.shapes || []).map(s => ({ ...s })),
+                  connectors: (state.connectors || []).map(c => ({ ...c })),
+                },
+              ]
+            : state.history,
+          canUndo: recordHistory ? true : state.canUndo,
+          connectors: state.connectors.map(connector =>
+            connector.id === id ? { ...connector, ...updates } : connector
+          ),
+        };
+      }),
 
     deleteEntity: id =>
       set(state => ({

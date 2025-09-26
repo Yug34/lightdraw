@@ -21,6 +21,10 @@ export const useCanvas = (options: UseCanvasOptions = {}) => {
   const [lastPan, setLastPan] = useState({ x: 0, y: 0 });
   const [isRotating, setIsRotating] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
+  const dragStartSnapshotRef = useRef<{
+    shapes: typeof shapes;
+    connectors: typeof connectors;
+  } | null>(null);
   const initialMouseWorldRef = useRef<{ x: number; y: number } | null>(null);
   const initialEntityPositionsRef = useRef<
     Record<string, { x: number; y: number; targetX?: number; targetY?: number }>
@@ -45,6 +49,7 @@ export const useCanvas = (options: UseCanvasOptions = {}) => {
     clearSelection,
     updateShape,
     updateConnector,
+    pushHistorySnapshot,
     placeShapeAtPosition,
     placeConnectorAtPosition,
     setPendingConnectorStart,
@@ -242,6 +247,11 @@ export const useCanvas = (options: UseCanvasOptions = {}) => {
       });
 
       initialEntityPositionsRef.current = pos;
+      // capture starting snapshot for undo once drag ends
+      dragStartSnapshotRef.current = {
+        shapes: (shapes || []).map(s => ({ ...s })),
+        connectors: (connectors || []).map(c => ({ ...c })),
+      };
       setIsDraggingEntity(true);
     },
     [
@@ -301,14 +311,22 @@ export const useCanvas = (options: UseCanvasOptions = {}) => {
             startPos.targetX !== undefined &&
             startPos.targetY !== undefined
           ) {
-            updateConnector(id, {
-              x: startPos.x + dx,
-              y: startPos.y + dy,
-              targetX: startPos.targetX + dx,
-              targetY: startPos.targetY + dy,
-            });
+            updateConnector(
+              id,
+              {
+                x: startPos.x + dx,
+                y: startPos.y + dy,
+                targetX: startPos.targetX + dx,
+                targetY: startPos.targetY + dy,
+              },
+              { recordHistory: false }
+            );
           } else {
-            updateShape(id, { x: startPos.x + dx, y: startPos.y + dy });
+            updateShape(
+              id,
+              { x: startPos.x + dx, y: startPos.y + dy },
+              { recordHistory: false }
+            );
           }
         });
       }
@@ -332,6 +350,14 @@ export const useCanvas = (options: UseCanvasOptions = {}) => {
     setIsDragging(false);
     if (isDraggingEntity) {
       setIsDraggingEntity(false);
+      // on drag end, push a single snapshot of the starting state
+      if (dragStartSnapshotRef.current) {
+        pushHistorySnapshot({
+          shapes: dragStartSnapshotRef.current.shapes as any,
+          connectors: dragStartSnapshotRef.current.connectors as any,
+        });
+        dragStartSnapshotRef.current = null;
+      }
       initialMouseWorldRef.current = null;
       initialMouseClientRef.current = null;
       initialEntityPositionsRef.current = {};
