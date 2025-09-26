@@ -29,111 +29,114 @@ export const ShapeRenderer: React.FC<ShapeRendererProps> = ({
     },
   };
 
-  const worldX = entity.x;
-  const worldY = entity.y;
-  const worldStrokeWidth = entity.strokeWidth || 2;
-  const rotation = (entity as Shape).rotation || 0;
-
   if (type === 'shape') {
     const shape = entity as Shape;
-    const worldWidth = shape.width;
-    const worldHeight = shape.height;
-    const worldFontSize = shape.fontSize || 16;
-
-    switch (shape.type) {
-      case 'rectangle':
-        return (
-          <ShapeWithHandles
-            shape={shape}
-            isSelected={isSelected}
-            worldX={worldX}
-            worldY={worldY}
-            worldWidth={worldWidth}
-            worldHeight={worldHeight}
-            rotation={rotation}
-            commonProps={commonProps}
-          >
-            <rect
-              key={shape.id}
-              x={0}
-              y={0}
-              width={worldWidth}
-              height={worldHeight}
-              fill={shape.fill}
-              stroke={shape.stroke}
-              strokeWidth={worldStrokeWidth}
-              {...commonProps}
-            />
-          </ShapeWithHandles>
-        );
-
-      case 'circle':
-        const worldRadius = Math.min(worldWidth, worldHeight) / 2;
-        return (
-          <ShapeWithHandles
-            shape={shape}
-            isSelected={isSelected}
-            worldX={worldX}
-            worldY={worldY}
-            worldWidth={worldWidth}
-            worldHeight={worldHeight}
-            rotation={rotation}
-            commonProps={commonProps}
-          >
-            <circle
-              key={shape.id}
-              cx={0}
-              cy={0}
-              r={worldRadius}
-              fill={shape.fill}
-              stroke={shape.stroke}
-              strokeWidth={worldStrokeWidth}
-              {...commonProps}
-            />
-          </ShapeWithHandles>
-        );
-
-      case 'text':
-        return (
-          <ShapeWithHandles
-            shape={shape}
-            isSelected={isSelected}
-            worldX={worldX}
-            worldY={worldY}
-            worldWidth={worldWidth}
-            worldHeight={worldHeight}
-            rotation={rotation}
-            commonProps={commonProps}
-          >
-            <rect
-              x={0}
-              y={0}
-              width={worldWidth}
-              height={worldHeight}
-              fill="transparent"
-              stroke={isSelected ? shape.stroke : 'transparent'}
-              strokeWidth={worldStrokeWidth}
-              strokeDasharray={isSelected ? '5,5' : 'none'}
-            />
-            <text
-              x={8}
-              y={worldHeight / 2 + 4}
-              fontSize={worldFontSize}
-              fontFamily={shape.fontFamily}
-              fill={shape.fill}
-              dominantBaseline="middle"
-            >
-              {shape.text || 'Text'}
-            </text>
-          </ShapeWithHandles>
-        );
-
-      default:
-        return null;
-    }
+    return renderShape(shape, isSelected, commonProps);
   } else {
     const connector = entity as Connector;
     return renderConnector(connector, commonProps);
+  }
+};
+
+const renderShape = (shape: Shape, isSelected: boolean, commonProps: any) => {
+  const worldX = shape.x;
+  const worldY = shape.y;
+  const worldStrokeWidth = shape.strokeWidth || 2;
+  const rotation = shape.rotation || 0;
+  const worldWidth = shape.width;
+  const worldHeight = shape.height;
+  const worldFontSize = shape.fontSize || 16;
+
+  switch (shape.type) {
+    case 'rectangle':
+      return (
+        <ShapeWithHandles
+          shape={shape}
+          isSelected={isSelected}
+          worldX={worldX}
+          worldY={worldY}
+          worldWidth={worldWidth}
+          worldHeight={worldHeight}
+          rotation={rotation}
+          commonProps={commonProps}
+        >
+          <rect
+            key={shape.id}
+            x={0}
+            y={0}
+            width={worldWidth}
+            height={worldHeight}
+            fill={shape.fill}
+            stroke={shape.stroke}
+            strokeWidth={worldStrokeWidth}
+            {...commonProps}
+          />
+        </ShapeWithHandles>
+      );
+
+    case 'circle':
+      const worldRadius = Math.min(worldWidth, worldHeight) / 2;
+      return (
+        <ShapeWithHandles
+          shape={shape}
+          isSelected={isSelected}
+          worldX={worldX}
+          worldY={worldY}
+          worldWidth={worldWidth}
+          worldHeight={worldHeight}
+          rotation={rotation}
+          commonProps={commonProps}
+        >
+          <circle
+            key={shape.id}
+            cx={0}
+            cy={0}
+            r={worldRadius}
+            fill={shape.fill}
+            stroke={shape.stroke}
+            strokeWidth={worldStrokeWidth}
+            {...commonProps}
+          />
+        </ShapeWithHandles>
+      );
+
+    case 'text':
+      return (
+        <ShapeWithHandles
+          shape={shape}
+          isSelected={isSelected}
+          worldX={worldX}
+          worldY={worldY}
+          worldWidth={worldWidth}
+          worldHeight={worldHeight}
+          rotation={rotation}
+          commonProps={commonProps}
+        >
+          <rect
+            x={0}
+            y={0}
+            width={worldWidth}
+            height={worldHeight}
+            fill="transparent"
+            stroke={isSelected ? shape.stroke : 'transparent'}
+            strokeWidth={worldStrokeWidth}
+            strokeDasharray={isSelected ? '5,5' : 'none'}
+          />
+          <text
+            x={8}
+            y={worldHeight / 2 + 4}
+            fontSize={worldFontSize}
+            fontFamily={shape.fontFamily}
+            fill={shape.fill}
+            dominantBaseline="middle"
+          >
+            {shape.text || 'Text'}
+          </text>
+        </ShapeWithHandles>
+      );
+
+    default:
+      return null;
   }
 };
 
@@ -424,7 +427,6 @@ const ShapeWithHandles: React.FC<ShapeWithHandlesProps> = ({
       {/* Shape content with rotation */}
       <g transform={transform}>{children}</g>
 
-      {/* Selection handles - only show if selected and single selection */}
       {isSelected && selectedEntityIds.length === 1 && (
         <SelectionHandles
           x={worldX}
