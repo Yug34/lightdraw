@@ -18,7 +18,7 @@ export const Canvas: React.FC<CanvasProps> = () => {
   const { theme } = useCanvasStore();
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(() => {
     try {
-      const stored = localStorage.getItem('sidebar_state');
+      const stored = localStorage.getItem('sidebar:open');
       return stored === null ? true : stored === 'true';
     } catch {
       return true;
@@ -27,7 +27,7 @@ export const Canvas: React.FC<CanvasProps> = () => {
 
   useEffect(() => {
     try {
-      localStorage.setItem('sidebar_state', String(sidebarOpen));
+      localStorage.setItem('sidebar:open', String(sidebarOpen));
     } catch {}
   }, [sidebarOpen]);
 

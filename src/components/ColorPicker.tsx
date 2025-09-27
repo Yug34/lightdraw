@@ -28,13 +28,13 @@ const ColorPicker = () => {
   const selectedConnector = (connectors || []).find(c => c.id === selectedId);
   const selectedGroup = (groups || []).find(g => g.id === selectedId);
 
-  const handleShapeFillColorChange = useCallback(
+  const handleShapeStrokeColorChange = useCallback(
     (c: Parameters<typeof Color.rgb>[0]) => {
       if (selectedShape) {
-        updateShapeFillColor(selectedShape.id, Color.rgb(c).string());
+        updateShapeStrokeColor(selectedShape.id, Color.rgb(c).string());
       }
     },
-    [selectedShape, updateShapeFillColor]
+    [selectedShape, updateShapeStrokeColor]
   );
 
   const handleColorChange = useCallback(
@@ -61,7 +61,7 @@ const ColorPicker = () => {
   return (
     <div
       className={cn(
-        'w-full min-h-[300px] max-h-[300px] px-2',
+        'w-full min-h-[316px] max-h-[616px] px-2',
         (selectedEntityIds.length !== 1 || selectedGroup) && 'hidden'
       )}
     >
@@ -82,8 +82,9 @@ const ColorPicker = () => {
           <ColorPickerFormat />
         </div>
       </ColorPickerBase>
+      <div className="w-full h-4" />
       <ColorPickerBase
-        onChange={handleShapeFillColorChange}
+        onChange={handleShapeStrokeColorChange}
         className={cn(
           'max-w-sm rounded-md border bg-background p-4 shadow-sm',
           (selectedEntityIds.length !== 1 || !selectedShape) && 'hidden'

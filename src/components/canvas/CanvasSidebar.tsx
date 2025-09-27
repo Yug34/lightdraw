@@ -50,12 +50,9 @@ export const CanvasSidebar = () => {
 
   return (
     <Sidebar>
-      <SidebarHeader />
       <SidebarContent>
-        <ColorPicker />
-
-        <SidebarGroup>
-          <SidebarGroupContent>
+        <SidebarGroup className="flex-1 min-h-0 flex flex-col gap-y-4">
+          <SidebarGroupContent className="overflow-y-auto p-2">
             {selectedEntityIds.length === 0 && (
               <div className="space-y-3 px-1 py-1">
                 <div className="text-sm text-muted-foreground">
@@ -289,9 +286,9 @@ export const CanvasSidebar = () => {
               </div>
             )}
           </SidebarGroupContent>
+          <ColorPicker />
         </SidebarGroup>
       </SidebarContent>
-      <SidebarFooter />
     </Sidebar>
   );
 };
