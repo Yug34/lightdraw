@@ -23,6 +23,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
+import { useCanvasStore } from '@/store/canvasStore';
 
 interface ColorPickerContextValue {
   hue: number;
@@ -59,6 +60,7 @@ export const ColorPicker = ({
   className,
   ...props
 }: ColorPickerProps) => {
+  const { selectedEntityIds } = useCanvasStore();
   const selectedColor = Color(value);
   const defaultColor = Color(defaultValue);
   const [hue, setHue] = useState(
@@ -107,10 +109,12 @@ export const ColorPicker = ({
         setMode,
       }}
     >
-      <div
-        className={cn('flex size-full flex-col gap-4', className)}
-        {...props}
-      />
+      {selectedEntityIds.length === 1 && (
+        <div
+          className={cn('flex size-full flex-col gap-4', className)}
+          {...props}
+        />
+      )}
     </ColorPickerContext.Provider>
   );
 };

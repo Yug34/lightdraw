@@ -51,9 +51,8 @@ export const CanvasSidebar = () => {
     <Sidebar>
       <SidebarHeader />
       <SidebarContent>
-        <div className="w-full min-h-[300px]">
-          <ColorPicker />
-        </div>
+        <ColorPicker />
+
         <SidebarGroup>
           <SidebarGroupLabel>Selection</SidebarGroupLabel>
           <SidebarGroupContent>

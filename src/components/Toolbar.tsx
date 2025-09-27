@@ -175,7 +175,6 @@ export const Toolbar: React.FC = () => {
       }`}
     >
       <div className="flex flex-col space-y-3">
-        {/* Shapes Row */}
         <div className="flex items-center space-x-2">
           <span
             className={`text-sm font-medium min-w-[60px] ${theme === 'dark' ? 'text-white/90' : 'text-gray-700'}`}
@@ -195,7 +194,6 @@ export const Toolbar: React.FC = () => {
           ))}
         </div>
 
-        {/* Connectors Row */}
         <div className="flex items-center space-x-2">
           <span
             className={`text-sm font-medium min-w-[80px] ${theme === 'dark' ? 'text-white/90' : 'text-gray-700'}`}
@@ -216,7 +214,6 @@ export const Toolbar: React.FC = () => {
           ))}
         </div>
 
-        {/* Actions Row */}
         <div className="flex items-center space-x-3">
           <Separator orientation="vertical" className="h-6" />
           <span
