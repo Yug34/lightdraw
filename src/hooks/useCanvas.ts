@@ -364,11 +364,7 @@ export const useCanvas = (options: UseCanvasOptions = {}) => {
           const startPos = initialGroupPositionsRef.current[groupId];
           if (!startPos) return;
 
-          updateGroup(
-            groupId,
-            { x: startPos.x + dx, y: startPos.y + dy },
-            { recordHistory: false }
-          );
+          updateGroup(groupId, { x: startPos.x + dx, y: startPos.y + dy });
         });
       }
     },
