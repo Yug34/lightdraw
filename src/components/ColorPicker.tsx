@@ -8,6 +8,7 @@ import {
   ColorPickerSelection,
 } from '@/components/ui/color-picker-base';
 import { useCanvas } from '@/hooks';
+import { cn } from '@/lib/utils';
 import Color from 'color';
 import { useCallback } from 'react';
 
@@ -45,23 +46,30 @@ const ColorPicker = () => {
   );
 
   return (
-    <ColorPickerBase
-      onChange={handleColorChange}
-      className="max-w-sm rounded-md border bg-background p-4 shadow-sm"
+    <div
+      className={cn(
+        'w-full min-h-[300px] max-h-[300px] px-2',
+        selectedEntityIds.length !== 1 && 'hidden'
+      )}
     >
-      <ColorPickerSelection />
-      <div className="flex items-center gap-4">
-        <ColorPickerEyeDropper />
-        <div className="grid w-full gap-1">
-          <ColorPickerHue />
-          <ColorPickerAlpha />
+      <ColorPickerBase
+        onChange={handleColorChange}
+        className="max-w-sm rounded-md border bg-background p-4 shadow-sm"
+      >
+        <ColorPickerSelection />
+        <div className="flex items-center gap-4">
+          <ColorPickerEyeDropper />
+          <div className="grid w-full gap-1">
+            <ColorPickerHue />
+            <ColorPickerAlpha />
+          </div>
         </div>
-      </div>
-      <div className="flex items-center gap-2">
-        <ColorPickerOutput />
-        <ColorPickerFormat />
-      </div>
-    </ColorPickerBase>
+        <div className="flex items-center gap-2">
+          <ColorPickerOutput />
+          <ColorPickerFormat />
+        </div>
+      </ColorPickerBase>
+    </div>
   );
 };
 export default ColorPicker;

@@ -4,7 +4,6 @@ import {
   SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
-  SidebarGroupLabel,
   SidebarHeader,
   useSidebar,
 } from '@/components/ui/sidebar';
@@ -15,6 +14,7 @@ import { Button } from '@/components/ui/button';
 import { useCanvasStore } from '@/store/canvasStore';
 import { ChevronLeftIcon, ChevronRightIcon } from 'lucide-react';
 import ColorPicker from '@/components/ColorPicker';
+import { capitalize } from '@/lib/utils';
 
 export const CanvasSidebarTrigger = () => {
   const { toggleSidebar, state } = useSidebar();
@@ -54,7 +54,6 @@ export const CanvasSidebar = () => {
         <ColorPicker />
 
         <SidebarGroup>
-          <SidebarGroupLabel>Selection</SidebarGroupLabel>
           <SidebarGroupContent>
             {selectedEntityIds.length === 0 && (
               <div className="space-y-3 px-1 py-1">
@@ -63,7 +62,7 @@ export const CanvasSidebar = () => {
                 </div>
                 <Separator />
                 <div className="space-y-2">
-                  <div className="text-sm font-medium">Theme</div>
+                  <div className="text-sm font-medium">Canvas Theme</div>
                   <div className="flex items-center gap-2">
                     <Button
                       variant={theme === 'light' ? 'default' : 'outline'}
@@ -98,10 +97,7 @@ export const CanvasSidebar = () => {
                     <Label htmlFor="shape-type">Type</Label>
                     <Input
                       id="shape-type"
-                      value={
-                        selectedShape.type.toUpperCase().charAt(0) +
-                        selectedShape.type.slice(1)
-                      }
+                      value={capitalize(selectedShape.type)}
                       readOnly
                     />
                   </div>
@@ -219,7 +215,7 @@ export const CanvasSidebar = () => {
                       <Label htmlFor="conn-type">Type</Label>
                       <Input
                         id="conn-type"
-                        value={selectedConnector.type}
+                        value={capitalize(selectedConnector.type)}
                         readOnly
                       />
                     </div>
