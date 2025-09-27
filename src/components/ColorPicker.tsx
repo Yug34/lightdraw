@@ -19,11 +19,13 @@ const ColorPicker = () => {
     connectors,
     updateShapeColor,
     updateConnectorColor,
+    groups,
   } = useCanvas();
 
   const selectedId = selectedEntityIds[0];
   const selectedShape = (shapes || []).find(s => s.id === selectedId);
   const selectedConnector = (connectors || []).find(c => c.id === selectedId);
+  const selectedGroup = (groups || []).find(g => g.id === selectedId);
 
   const handleColorChange = useCallback(
     (c: Parameters<typeof Color.rgb>[0]) => {
@@ -49,7 +51,7 @@ const ColorPicker = () => {
     <div
       className={cn(
         'w-full min-h-[300px] max-h-[300px] px-2',
-        selectedEntityIds.length !== 1 && 'hidden'
+        (selectedEntityIds.length !== 1 || selectedGroup) && 'hidden'
       )}
     >
       <ColorPickerBase

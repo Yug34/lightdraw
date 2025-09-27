@@ -40,10 +40,11 @@ export const CanvasSidebarTrigger = () => {
 };
 
 export const CanvasSidebar = () => {
-  const { shapes, connectors, selectedEntityIds, theme, setTheme } =
+  const { shapes, connectors, groups, selectedEntityIds, theme, setTheme } =
     useCanvasStore();
 
   const selectedId = selectedEntityIds[0];
+  const selectedGroup = (groups || []).find(g => g.id === selectedId);
   const selectedShape = (shapes || []).find(s => s.id === selectedId);
   const selectedConnector = (connectors || []).find(c => c.id === selectedId);
 
@@ -273,6 +274,20 @@ export const CanvasSidebar = () => {
                   </div>
                 </div>
               )}
+
+            {selectedEntityIds.length === 1 && selectedGroup && (
+              <div className="space-y-3">
+                <div className="text-sm font-medium">Group</div>
+                <div>
+                  <Label htmlFor="group-name">Name</Label>
+                  <Input
+                    id="group-name"
+                    value={selectedGroup?.name || ''}
+                    readOnly
+                  />
+                </div>
+              </div>
+            )}
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
