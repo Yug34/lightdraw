@@ -24,6 +24,7 @@ export const useCanvas = (options: UseCanvasOptions = {}) => {
   const dragStartSnapshotRef = useRef<{
     shapes: typeof shapes;
     connectors: typeof connectors;
+    groups: typeof groups;
   } | null>(null);
   const initialMouseWorldRef = useRef<{ x: number; y: number } | null>(null);
   const initialEntityPositionsRef = useRef<
@@ -38,6 +39,7 @@ export const useCanvas = (options: UseCanvasOptions = {}) => {
     canvasSize,
     shapes,
     connectors,
+    groups,
     selectedEntityIds,
     toolMode,
     pendingConnectorStart,
@@ -251,6 +253,7 @@ export const useCanvas = (options: UseCanvasOptions = {}) => {
       dragStartSnapshotRef.current = {
         shapes: (shapes || []).map(s => ({ ...s })),
         connectors: (connectors || []).map(c => ({ ...c })),
+        groups: (groups || []).map(g => ({ ...g })),
       };
       setIsDraggingEntity(true);
     },
@@ -263,6 +266,7 @@ export const useCanvas = (options: UseCanvasOptions = {}) => {
       viewport.zoom,
       shapes,
       connectors,
+      groups,
     ]
   );
 
@@ -355,6 +359,7 @@ export const useCanvas = (options: UseCanvasOptions = {}) => {
         pushHistorySnapshot({
           shapes: dragStartSnapshotRef.current.shapes as any,
           connectors: dragStartSnapshotRef.current.connectors as any,
+          groups: dragStartSnapshotRef.current.groups as any,
         });
         dragStartSnapshotRef.current = null;
       }
@@ -421,6 +426,7 @@ export const useCanvas = (options: UseCanvasOptions = {}) => {
     canvasSize,
     shapes,
     connectors,
+    groups,
     selectedEntityIds,
     toolMode,
     handleMouseDown,

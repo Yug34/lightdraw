@@ -9,6 +9,7 @@ export const Toolbar: React.FC = () => {
   const {
     shapes,
     connectors,
+    groups,
     deleteEntity,
     selectedEntityIds,
     toolMode,
@@ -16,6 +17,9 @@ export const Toolbar: React.FC = () => {
     clearPersistedState,
     undo,
     canUndo,
+    addGroup,
+    deleteGroup,
+    calculateGroupBoundingBox,
   } = useCanvasStore();
 
   const selectRectangleTool = () => setToolMode('rectangle');
@@ -39,6 +43,53 @@ export const Toolbar: React.FC = () => {
       clearPersistedState();
     }
   };
+
+  // Group and ungroup functions
+  const handleGroup = () => {
+    if (selectedEntityIds.length < 2) {
+      alert('Please select at least 2 entities to create a group.');
+      return;
+    }
+
+    // Filter out any groups from the selection (groups can't be grouped)
+    const entityIds = selectedEntityIds.filter(id => {
+      return !groups.some(group => group.id === id);
+    });
+
+    if (entityIds.length < 2) {
+      alert('Please select at least 2 non-group entities to create a group.');
+      return;
+    }
+
+    const groupName = prompt('Enter group name (optional):') || undefined;
+    addGroup(entityIds, groupName);
+  };
+
+  const handleUngroup = () => {
+    const selectedGroups = selectedEntityIds.filter(id =>
+      groups.some(group => group.id === id)
+    );
+
+    if (selectedGroups.length === 0) {
+      alert('Please select one or more groups to ungroup.');
+      return;
+    }
+
+    selectedGroups.forEach(groupId => {
+      deleteGroup(groupId);
+    });
+  };
+
+  // Check if we can group (have 2+ non-group entities selected)
+  const canGroup =
+    selectedEntityIds.length >= 2 &&
+    selectedEntityIds.filter(id => !groups.some(group => group.id === id))
+      .length >= 2;
+
+  // Check if we can ungroup (have groups selected)
+  const canUngroup = selectedEntityIds.some(id =>
+    groups.some(group => group.id === id)
+  );
 
   const shapeButtons = [
     {
@@ -155,6 +206,26 @@ export const Toolbar: React.FC = () => {
             Undo
           </Button>
           <Button
+            onClick={handleGroup}
+            variant="outline"
+            size="sm"
+            className="h-8"
+            disabled={!canGroup}
+            title="Group selected entities"
+          >
+            Group
+          </Button>
+          <Button
+            onClick={handleUngroup}
+            variant="outline"
+            size="sm"
+            className="h-8"
+            disabled={!canUngroup}
+            title="Ungroup selected groups"
+          >
+            Ungroup
+          </Button>
+          <Button
             onClick={deleteSelected}
             variant="outline"
             size="sm"
@@ -175,7 +246,8 @@ export const Toolbar: React.FC = () => {
           <div
             className={`text-sm ${theme === 'dark' ? 'text-white/60' : 'text-gray-500'}`}
           >
-            Total shapes: {shapes.length + connectors.length}
+            Total: {shapes.length + connectors.length} entities, {groups.length}{' '}
+            groups
           </div>
         </div>
       </div>

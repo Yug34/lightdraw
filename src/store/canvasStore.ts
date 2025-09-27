@@ -67,6 +67,20 @@ export interface Entity {
   entityData: Shape | Connector;
 }
 
+export interface Group {
+  id: string;
+  name?: string;
+  entityIds: string[]; // IDs of shapes and connectors in this group
+  x: number; // Bounding box position
+  y: number; // Bounding box position
+  width: number; // Bounding box width
+  height: number; // Bounding box height
+  stroke?: string;
+  strokeWidth?: number;
+  fill?: string;
+  opacity?: number;
+}
+
 export type ToolMode =
   | 'none'
   | 'rectangle'
@@ -92,6 +106,7 @@ export interface CanvasState {
 
   shapes: Shape[];
   connectors: Connector[];
+  groups: Group[];
 
   selectedEntityIds: string[];
 
@@ -148,11 +163,23 @@ export interface CanvasState {
   canUndo: boolean;
   undo: () => void;
   pushHistorySnapshot: (snapshot: CanvasSnapshot) => void;
+
+  // Group management functions
+  addGroup: (entityIds: string[], name?: string) => void;
+  updateGroup: (id: string, updates: Partial<Group>) => void;
+  deleteGroup: (id: string) => void;
+  calculateGroupBoundingBox: (entityIds: string[]) => {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  };
 }
 
 export interface CanvasSnapshot {
   shapes: Shape[];
   connectors: Connector[];
+  groups: Group[];
 }
 
 export const useCanvasStore = create<CanvasState>()(
@@ -171,6 +198,7 @@ export const useCanvasStore = create<CanvasState>()(
 
     shapes: [],
     connectors: [],
+    groups: [],
     selectedEntityIds: [],
     toolMode: 'none',
     pendingConnectorStart: null,
@@ -187,6 +215,7 @@ export const useCanvasStore = create<CanvasState>()(
           {
             shapes: (snapshot.shapes || []).map(s => ({ ...s })),
             connectors: (snapshot.connectors || []).map(c => ({ ...c })),
+            groups: (snapshot.groups || []).map(g => ({ ...g })),
           },
         ],
         canUndo: true,
@@ -222,6 +251,7 @@ export const useCanvasStore = create<CanvasState>()(
           {
             shapes: (state.shapes || []).map(s => ({ ...s })),
             connectors: (state.connectors || []).map(c => ({ ...c })),
+            groups: (state.groups || []).map(g => ({ ...g })),
           },
         ],
         canUndo: true,
@@ -242,6 +272,7 @@ export const useCanvasStore = create<CanvasState>()(
           {
             shapes: (state.shapes || []).map(s => ({ ...s })),
             connectors: (state.connectors || []).map(c => ({ ...c })),
+            groups: (state.groups || []).map(g => ({ ...g })),
           },
         ],
         canUndo: true,
@@ -259,6 +290,7 @@ export const useCanvasStore = create<CanvasState>()(
                 {
                   shapes: (state.shapes || []).map(s => ({ ...s })),
                   connectors: (state.connectors || []).map(c => ({ ...c })),
+                  groups: (state.groups || []).map(g => ({ ...g })),
                 },
               ]
             : state.history,
@@ -279,6 +311,7 @@ export const useCanvasStore = create<CanvasState>()(
                 {
                   shapes: (state.shapes || []).map(s => ({ ...s })),
                   connectors: (state.connectors || []).map(c => ({ ...c })),
+                  groups: (state.groups || []).map(g => ({ ...g })),
                 },
               ]
             : state.history,
@@ -296,6 +329,7 @@ export const useCanvasStore = create<CanvasState>()(
           {
             shapes: (state.shapes || []).map(s => ({ ...s })),
             connectors: (state.connectors || []).map(c => ({ ...c })),
+            groups: (state.groups || []).map(g => ({ ...g })),
           },
         ],
         canUndo: true,
@@ -321,6 +355,7 @@ export const useCanvasStore = create<CanvasState>()(
           {
             shapes: (state.shapes || []).map(s => ({ ...s })),
             connectors: (state.connectors || []).map(c => ({ ...c })),
+            groups: (state.groups || []).map(g => ({ ...g })),
           },
         ],
         canUndo: true,
@@ -338,6 +373,7 @@ export const useCanvasStore = create<CanvasState>()(
           {
             shapes: (state.shapes || []).map(s => ({ ...s })),
             connectors: (state.connectors || []).map(c => ({ ...c })),
+            groups: (state.groups || []).map(g => ({ ...g })),
           },
         ],
         canUndo: true,
@@ -353,6 +389,7 @@ export const useCanvasStore = create<CanvasState>()(
           {
             shapes: (state.shapes || []).map(s => ({ ...s })),
             connectors: (state.connectors || []).map(c => ({ ...c })),
+            groups: (state.groups || []).map(g => ({ ...g })),
           },
         ],
         canUndo: true,
@@ -446,6 +483,7 @@ export const useCanvasStore = create<CanvasState>()(
             {
               shapes: (state.shapes || []).map(s => ({ ...s })),
               connectors: (state.connectors || []).map(c => ({ ...c })),
+              groups: (state.groups || []).map(g => ({ ...g })),
             },
           ],
           canUndo: true,
@@ -494,6 +532,7 @@ export const useCanvasStore = create<CanvasState>()(
           {
             shapes: (state.shapes || []).map(s => ({ ...s })),
             connectors: (state.connectors || []).map(c => ({ ...c })),
+            groups: (state.groups || []).map(g => ({ ...g })),
           },
         ],
         canUndo: true,
@@ -512,6 +551,7 @@ export const useCanvasStore = create<CanvasState>()(
             viewport: persistedState.viewport || { x: 0, y: 0, zoom: 1 },
             connectors: persistedState.connectors || [],
             shapes: persistedState.shapes || [],
+            groups: persistedState.groups || [],
           });
         }
       } catch (error) {
@@ -520,6 +560,7 @@ export const useCanvasStore = create<CanvasState>()(
         set(state => ({
           connectors: state.connectors || [],
           shapes: state.shapes || [],
+          groups: state.groups || [],
         }));
       }
     },
@@ -533,6 +574,7 @@ export const useCanvasStore = create<CanvasState>()(
           viewport: state.viewport,
           shapes: state.shapes,
           connectors: state.connectors,
+          groups: state.groups,
         });
       } catch (error) {
         console.error('Failed to save state:', error);
@@ -548,6 +590,7 @@ export const useCanvasStore = create<CanvasState>()(
         set({
           shapes: [],
           connectors: [],
+          groups: [],
           selectedEntityIds: [],
           viewport: { x: 0, y: 0, zoom: 1 },
         });
@@ -566,9 +609,112 @@ export const useCanvasStore = create<CanvasState>()(
           canUndo: nextHistory.length > 0,
           shapes: (previous.shapes || []).map(s => ({ ...s })),
           connectors: (previous.connectors || []).map(c => ({ ...c })),
+          groups: (previous.groups || []).map(g => ({ ...g })),
           selectedEntityIds: [],
         };
       }),
+
+    // Group management functions
+    calculateGroupBoundingBox: entityIds => {
+      const state = get();
+      if (entityIds.length === 0) {
+        return { x: 0, y: 0, width: 0, height: 0 };
+      }
+
+      let minX = Infinity;
+      let minY = Infinity;
+      let maxX = -Infinity;
+      let maxY = -Infinity;
+
+      // Calculate bounding box for shapes
+      entityIds.forEach(id => {
+        const shape = state.shapes.find(s => s.id === id);
+        if (shape) {
+          minX = Math.min(minX, shape.x);
+          minY = Math.min(minY, shape.y);
+          maxX = Math.max(maxX, shape.x + shape.width);
+          maxY = Math.max(maxY, shape.y + shape.height);
+        }
+
+        const connector = state.connectors.find(c => c.id === id);
+        if (connector) {
+          minX = Math.min(minX, connector.x, connector.targetX);
+          minY = Math.min(minY, connector.y, connector.targetY);
+          maxX = Math.max(maxX, connector.x, connector.targetX);
+          maxY = Math.max(maxY, connector.y, connector.targetY);
+        }
+      });
+
+      const padding = 10; // Add some padding around the group
+      return {
+        x: minX - padding,
+        y: minY - padding,
+        width: maxX - minX + padding * 2,
+        height: maxY - minY + padding * 2,
+      };
+    },
+
+    addGroup: (entityIds, name) => {
+      const state = get();
+      if (entityIds.length < 2) return; // Need at least 2 entities to create a group
+
+      const boundingBox = state.calculateGroupBoundingBox(entityIds);
+      const id = `group-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
+      const group: Group = {
+        id,
+        name: name || `Group ${state.groups.length + 1}`,
+        entityIds,
+        ...boundingBox,
+        stroke: '#3b82f6',
+        strokeWidth: 2,
+        fill: 'transparent',
+        opacity: 0.8,
+      };
+
+      set(state => ({
+        history: [
+          ...state.history,
+          {
+            shapes: (state.shapes || []).map(s => ({ ...s })),
+            connectors: (state.connectors || []).map(c => ({ ...c })),
+            groups: (state.groups || []).map(g => ({ ...g })),
+          },
+        ],
+        canUndo: true,
+        groups: [...state.groups, group],
+      }));
+    },
+
+    updateGroup: (id, updates) =>
+      set(state => ({
+        history: [
+          ...state.history,
+          {
+            shapes: (state.shapes || []).map(s => ({ ...s })),
+            connectors: (state.connectors || []).map(c => ({ ...c })),
+            groups: (state.groups || []).map(g => ({ ...g })),
+          },
+        ],
+        canUndo: true,
+        groups: state.groups.map(group =>
+          group.id === id ? { ...group, ...updates } : group
+        ),
+      })),
+
+    deleteGroup: id =>
+      set(state => ({
+        history: [
+          ...state.history,
+          {
+            shapes: (state.shapes || []).map(s => ({ ...s })),
+            connectors: (state.connectors || []).map(c => ({ ...c })),
+            groups: (state.groups || []).map(g => ({ ...g })),
+          },
+        ],
+        canUndo: true,
+        groups: state.groups.filter(group => group.id !== id),
+      })),
   }))
 );
 
@@ -580,14 +726,16 @@ useCanvasStore.subscribe(
   state => ({
     shapes: state.shapes,
     connectors: state.connectors,
+    groups: state.groups,
     viewport: state.viewport,
   }),
   (current, previous) => {
-    // Only save if shapes or viewport actually changed
+    // Only save if shapes, connectors, groups or viewport actually changed
     if (
       previous &&
       (current.shapes !== previous.shapes ||
         current.connectors !== previous.connectors ||
+        current.groups !== previous.groups ||
         current.viewport !== previous.viewport)
     ) {
       if (saveTimeout) {

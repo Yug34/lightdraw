@@ -3,7 +3,7 @@ import { GridBackground } from '@/components/canvas/GridBackground';
 import { ShapeRenderer } from '@/components/canvas/ShapeRenderer';
 import { useCanvas } from '@/hooks';
 import { useCanvasStore } from '@/store/canvasStore';
-import type { Connector, Shape } from '@/store/canvasStore';
+import type { Connector, Shape, Group } from '@/store/canvasStore';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import {
   CanvasSidebar,
@@ -37,6 +37,7 @@ export const Canvas: React.FC<CanvasProps> = () => {
     canvasSize,
     shapes,
     connectors,
+    groups,
     selectedEntityIds,
     handleMouseDown,
     handleMouseMove,
@@ -80,6 +81,49 @@ export const Canvas: React.FC<CanvasProps> = () => {
     );
   };
 
+  const renderGroup = (group: Group) => {
+    const isSelected = selectedEntityIds.includes(group.id);
+    return (
+      <g key={group.id}>
+        {/* Group bounding box */}
+        <rect
+          x={group.x}
+          y={group.y}
+          width={group.width}
+          height={group.height}
+          fill={group.fill || 'transparent'}
+          stroke={group.stroke || '#3b82f6'}
+          strokeWidth={group.strokeWidth || 2}
+          strokeDasharray="5,5"
+          opacity={group.opacity || 0.8}
+          style={{
+            cursor: 'pointer',
+            filter: isSelected
+              ? 'drop-shadow(0 0 8px rgba(59, 130, 246, 0.5))'
+              : 'none',
+          }}
+          onClick={e => handleShapeClick(e, group.id)}
+          onMouseDown={e =>
+            handleEntityMouseDown && handleEntityMouseDown(e, group.id)
+          }
+        />
+        {/* Group name label */}
+        {group.name && (
+          <text
+            x={group.x + 5}
+            y={group.y - 5}
+            fontSize="12"
+            fill={group.stroke || '#3b82f6'}
+            fontWeight="bold"
+            style={{ pointerEvents: 'none' }}
+          >
+            {group.name}
+          </text>
+        )}
+      </g>
+    );
+  };
+
   return (
     <SidebarProvider open={sidebarOpen} onOpenChange={setSidebarOpen}>
       <CanvasSidebar />
@@ -114,6 +158,7 @@ export const Canvas: React.FC<CanvasProps> = () => {
 
           {(shapes ?? []).map(renderShape)}
           {(connectors ?? []).map(renderConnector)}
+          {(groups ?? []).map(renderGroup)}
         </svg>
 
         <Toolbar />

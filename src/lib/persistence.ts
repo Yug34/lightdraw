@@ -1,4 +1,4 @@
-import type { CanvasState, Connector, Shape } from '@/store/canvasStore';
+import type { CanvasState, Connector, Shape, Group } from '@/store/canvasStore';
 
 const DB_NAME = 'LightDrawDB';
 const DB_VERSION = 1;
@@ -8,6 +8,7 @@ export interface PersistedCanvasState {
   viewport: CanvasState['viewport'];
   shapes: Shape[];
   connectors: Connector[];
+  groups: Group[];
   lastSaved: number;
 }
 
@@ -47,6 +48,7 @@ class PersistenceService {
     viewport: CanvasState['viewport'];
     shapes: Shape[];
     connectors: Connector[];
+    groups: Group[];
   }): Promise<void> {
     if (!this.db) {
       throw new Error('Database not initialized');
@@ -56,6 +58,7 @@ class PersistenceService {
       viewport: state.viewport,
       shapes: state.shapes,
       connectors: state.connectors,
+      groups: state.groups,
       lastSaved: Date.now(),
     };
 
@@ -89,6 +92,7 @@ class PersistenceService {
             viewport: state.viewport || { x: 0, y: 0, zoom: 1 },
             shapes: state.shapes || [],
             connectors: state.connectors || [],
+            groups: state.groups || [],
             lastSaved: state.lastSaved || Date.now(),
           };
           resolve(normalizedState);
