@@ -1,8 +1,19 @@
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { capitalize } from '@/lib/utils';
 import { useCanvasStore } from '@/store/canvasStore';
-import React from 'react';
+import React, { useState } from 'react';
 
 export const Toolbar: React.FC = () => {
   const { theme } = useCanvasStore();
@@ -21,6 +32,10 @@ export const Toolbar: React.FC = () => {
     deleteGroup,
     calculateGroupBoundingBox,
   } = useCanvasStore();
+
+  // Dialog state
+  const [isGroupDialogOpen, setIsGroupDialogOpen] = useState(false);
+  const [groupName, setGroupName] = useState('');
 
   const selectRectangleTool = () => setToolMode('rectangle');
   const selectCircleTool = () => setToolMode('circle');
@@ -61,8 +76,23 @@ export const Toolbar: React.FC = () => {
       return;
     }
 
-    const groupName = prompt('Enter group name (optional):') || undefined;
-    addGroup(entityIds, groupName);
+    setIsGroupDialogOpen(true);
+  };
+
+  const handleGroupSubmit = () => {
+    const entityIds = selectedEntityIds.filter(id => {
+      return !groups.some(group => group.id === id);
+    });
+
+    const finalGroupName = groupName.trim() || undefined;
+    addGroup(entityIds, finalGroupName);
+    setGroupName('');
+    setIsGroupDialogOpen(false);
+  };
+
+  const handleGroupCancel = () => {
+    setGroupName('');
+    setIsGroupDialogOpen(false);
   };
 
   const handleUngroup = () => {
@@ -251,6 +281,47 @@ export const Toolbar: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Group Name Dialog */}
+      <Dialog open={isGroupDialogOpen} onOpenChange={setIsGroupDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Create Group</DialogTitle>
+            <DialogDescription>
+              Enter a name for the group (optional). Leave blank for an unnamed
+              group.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="group-name" className="text-right">
+                Name
+              </Label>
+              <Input
+                id="group-name"
+                value={groupName}
+                onChange={e => setGroupName(e.target.value)}
+                className="col-span-3"
+                placeholder="Enter group name..."
+                onKeyDown={e => {
+                  if (e.key === 'Enter') {
+                    handleGroupSubmit();
+                  } else if (e.key === 'Escape') {
+                    handleGroupCancel();
+                  }
+                }}
+                autoFocus
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={handleGroupCancel}>
+              Cancel
+            </Button>
+            <Button onClick={handleGroupSubmit}>Create Group</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
