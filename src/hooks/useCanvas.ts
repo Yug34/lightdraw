@@ -30,6 +30,9 @@ export const useCanvas = (options: UseCanvasOptions = {}) => {
   const initialEntityPositionsRef = useRef<
     Record<string, { x: number; y: number; targetX?: number; targetY?: number }>
   >({});
+  const initialGroupPositionsRef = useRef<
+    Record<string, { x: number; y: number }>
+  >({});
   const initialMouseClientRef = useRef<{ x: number; y: number } | null>(null);
   const dragInitiatedRef = useRef(false);
   const clickSuppressedRef = useRef(false);
@@ -51,6 +54,7 @@ export const useCanvas = (options: UseCanvasOptions = {}) => {
     clearSelection,
     updateShape,
     updateConnector,
+    updateGroup,
     pushHistorySnapshot,
     placeShapeAtPosition,
     placeConnectorAtPosition,
@@ -221,10 +225,20 @@ export const useCanvas = (options: UseCanvasOptions = {}) => {
       dragInitiatedRef.current = false;
       clickSuppressedRef.current = false;
 
-      // dragging all selected entities
-      const idsToDrag = selectedEntityIds.includes(entityId)
-        ? selectedEntityIds
-        : [entityId];
+      // Check if the entity is part of a group
+      const containingGroup = groups.find(group => group.id === entityId);
+
+      // Determine which entities to drag
+      let idsToDrag: string[];
+      if (containingGroup) {
+        // If entity is in a group, drag all entities in that group
+        idsToDrag = containingGroup.entityIds;
+      } else {
+        // Otherwise, drag selected entities or just the clicked entity
+        idsToDrag = selectedEntityIds.includes(entityId)
+          ? selectedEntityIds
+          : [entityId];
+      }
 
       // snapshot initial positions for both shapes and connectors
       const pos: Record<
@@ -248,7 +262,17 @@ export const useCanvas = (options: UseCanvasOptions = {}) => {
           };
       });
 
+      // Handle groups - store initial positions for groups that contain dragged entities
+      const groupPos: Record<string, { x: number; y: number }> = {};
+      if (containingGroup) {
+        groupPos[containingGroup.id] = {
+          x: containingGroup.x,
+          y: containingGroup.y,
+        };
+      }
+
       initialEntityPositionsRef.current = pos;
+      initialGroupPositionsRef.current = groupPos;
       // capture starting snapshot for undo once drag ends
       dragStartSnapshotRef.current = {
         shapes: (shapes || []).map(s => ({ ...s })),
@@ -333,6 +357,19 @@ export const useCanvas = (options: UseCanvasOptions = {}) => {
             );
           }
         });
+
+        // Update group positions
+        const groupIds = Object.keys(initialGroupPositionsRef.current || {});
+        groupIds.forEach(groupId => {
+          const startPos = initialGroupPositionsRef.current[groupId];
+          if (!startPos) return;
+
+          updateGroup(
+            groupId,
+            { x: startPos.x + dx, y: startPos.y + dy },
+            { recordHistory: false }
+          );
+        });
       }
     },
     [
@@ -347,6 +384,7 @@ export const useCanvas = (options: UseCanvasOptions = {}) => {
       viewport.y,
       updateShape,
       updateConnector,
+      updateGroup,
     ]
   );
 
@@ -366,6 +404,7 @@ export const useCanvas = (options: UseCanvasOptions = {}) => {
       initialMouseWorldRef.current = null;
       initialMouseClientRef.current = null;
       initialEntityPositionsRef.current = {};
+      initialGroupPositionsRef.current = {};
       dragInitiatedRef.current = false;
     }
   }, [isDraggingEntity]);
