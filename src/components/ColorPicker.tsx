@@ -17,7 +17,8 @@ const ColorPicker = () => {
     selectedEntityIds,
     shapes,
     connectors,
-    updateShapeColor,
+    updateShapeFillColor,
+    updateShapeStrokeColor,
     updateConnectorColor,
     groups,
   } = useCanvas();
@@ -27,11 +28,20 @@ const ColorPicker = () => {
   const selectedConnector = (connectors || []).find(c => c.id === selectedId);
   const selectedGroup = (groups || []).find(g => g.id === selectedId);
 
+  const handleShapeFillColorChange = useCallback(
+    (c: Parameters<typeof Color.rgb>[0]) => {
+      if (selectedShape) {
+        updateShapeFillColor(selectedShape.id, Color.rgb(c).string());
+      }
+    },
+    [selectedShape, updateShapeFillColor]
+  );
+
   const handleColorChange = useCallback(
     (c: Parameters<typeof Color.rgb>[0]) => {
       if (selectedEntityIds.length === 1) {
         if (selectedShape) {
-          updateShapeColor(selectedShape.id, Color.rgb(c).string());
+          updateShapeFillColor(selectedShape.id, Color.rgb(c).string());
         }
         if (selectedConnector) {
           updateConnectorColor(selectedConnector.id, Color.rgb(c).string());
@@ -42,7 +52,8 @@ const ColorPicker = () => {
       selectedEntityIds,
       selectedShape,
       selectedConnector,
-      updateShapeColor,
+      updateShapeFillColor,
+      updateShapeStrokeColor,
       updateConnectorColor,
     ]
   );
@@ -57,6 +68,26 @@ const ColorPicker = () => {
       <ColorPickerBase
         onChange={handleColorChange}
         className="max-w-sm rounded-md border bg-background p-4 shadow-sm"
+      >
+        <ColorPickerSelection />
+        <div className="flex items-center gap-4">
+          <ColorPickerEyeDropper />
+          <div className="grid w-full gap-1">
+            <ColorPickerHue />
+            <ColorPickerAlpha />
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <ColorPickerOutput />
+          <ColorPickerFormat />
+        </div>
+      </ColorPickerBase>
+      <ColorPickerBase
+        onChange={handleShapeFillColorChange}
+        className={cn(
+          'max-w-sm rounded-md border bg-background p-4 shadow-sm',
+          (selectedEntityIds.length !== 1 || !selectedShape) && 'hidden'
+        )}
       >
         <ColorPickerSelection />
         <div className="flex items-center gap-4">

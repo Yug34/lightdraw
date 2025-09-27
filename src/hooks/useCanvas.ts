@@ -440,9 +440,15 @@ export const useCanvas = (options: UseCanvasOptions = {}) => {
     [selectEntity, selectEntities, selectedEntityIds, enableSelection]
   );
 
-  const updateShapeColor = useCallback(
+  const updateShapeFillColor = useCallback(
     (id: string, color: string) => {
-      updateShape(id, { fill: color, stroke: color });
+      updateShape(id, { fill: color });
+    },
+    [updateShape]
+  );
+  const updateShapeStrokeColor = useCallback(
+    (id: string, color: string) => {
+      updateShape(id, { stroke: color });
     },
     [updateShape]
   );
@@ -476,7 +482,8 @@ export const useCanvas = (options: UseCanvasOptions = {}) => {
     rotateShape,
     resizeShape,
     theme,
-    updateShapeColor,
+    updateShapeFillColor,
+    updateShapeStrokeColor,
     updateConnectorColor,
   };
 };
