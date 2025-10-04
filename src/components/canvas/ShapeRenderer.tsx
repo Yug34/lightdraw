@@ -498,9 +498,19 @@ const SelectionHandles: React.FC<SelectionHandlesProps> = ({
         } else if (handle === 'se') {
           newWidth = width + worldDeltaX;
           newHeight = height + worldDeltaY;
-        } else {
-          // Other handles not handled here
-          return;
+        } else if (handle === 'nw') {
+          newWidth = width - worldDeltaX;
+          newHeight = height - worldDeltaY;
+        } else if (handle === 'n') {
+          newHeight = height - worldDeltaY;
+        } else if (handle === 'ne') {
+          newWidth = width - worldDeltaX;
+          newHeight = height - worldDeltaY;
+        } else if (handle === 'w') {
+          newWidth = width - worldDeltaX;
+        } else if (handle === 'sw') {
+          newWidth = width - worldDeltaX;
+          newHeight = height + worldDeltaY;
         }
 
         // Apply the resize. For east/south edges, top-left stays fixed (deltaX/Y = 0)
