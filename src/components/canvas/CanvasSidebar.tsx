@@ -16,16 +16,11 @@ import { capitalize } from '@/lib/utils';
 
 export const CanvasSidebarTrigger = () => {
   const { toggleSidebar, state } = useSidebar();
-  const { theme } = useCanvasStore();
 
   return (
     <Button
-      className={`w-6 h-12 cursor-pointer absolute top-1/2 -translate-y-1/2 border-3 border-l-0 rounded-l-none ${
-        theme === 'dark'
-          ? 'bg-slate-800 border-white/10 text-white'
-          : 'bg-white border-gray-300'
-      }`}
-      variant="outline"
+      className="w-6 h-12"
+      variant="sidebarTrigger"
       onClick={toggleSidebar}
     >
       {state === 'expanded' ? (
