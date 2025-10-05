@@ -140,6 +140,8 @@ export interface CanvasState {
     id: string,
     width: number,
     height: number,
+    x: number,
+    y: number,
     deltaX?: number,
     deltaY?: number
   ) => void;
@@ -382,29 +384,33 @@ export const useCanvasStore = create<CanvasState>()(
         ),
       })),
 
-    resizeShape: (id, width, height, deltaX = 0, deltaY = 0) =>
-      set(state => ({
-        history: [
-          ...state.history,
-          {
-            shapes: (state.shapes || []).map(s => ({ ...s })),
-            connectors: (state.connectors || []).map(c => ({ ...c })),
-            groups: (state.groups || []).map(g => ({ ...g })),
-          },
-        ],
-        canUndo: true,
-        shapes: state.shapes.map(shape =>
-          shape.id === id
-            ? {
-                ...shape,
-                width: Math.max(10, width), // Minimum width of 10
-                height: Math.max(10, height), // Minimum height of 10
-                x: shape.x + deltaX,
-                y: shape.y + deltaY,
-              }
-            : shape
-        ),
-      })),
+    resizeShape: (id, width, height, x, y, deltaX = 0, deltaY = 0) => {
+      set(state => {
+        const newState = {
+          history: [
+            ...state.history,
+            {
+              shapes: (state.shapes || []).map(s => ({ ...s })),
+              connectors: (state.connectors || []).map(c => ({ ...c })),
+              groups: (state.groups || []).map(g => ({ ...g })),
+            },
+          ],
+          canUndo: true,
+          shapes: state.shapes.map(shape =>
+            shape.id === id
+              ? {
+                  ...shape,
+                  width: Math.max(10, width), // Minimum width of 10
+                  height: Math.max(10, height), // Minimum height of 10
+                  x: x ?? shape.x + deltaX,
+                  y: y ?? shape.y + deltaY,
+                }
+              : shape
+          ),
+        };
+        return newState;
+      });
+    },
 
     setToolMode: mode => set({ toolMode: mode }),
 

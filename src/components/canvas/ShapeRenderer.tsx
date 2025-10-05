@@ -476,11 +476,9 @@ const SelectionHandles: React.FC<SelectionHandlesProps> = ({
         initialResizeDataRef.current &&
         selectedEntityIds.length === 1
       ) {
-        // Implement resize for 's', 'e', and 'se' without rotation handling
-        const { width, height, mouseX, mouseY, handle } =
+        const { width, height, mouseX, mouseY, handle, x, y } =
           initialResizeDataRef.current;
 
-        // Convert screen-space movement to world-space based on zoom
         const deltaClientX = e.clientX - mouseX;
         const deltaClientY = e.clientY - mouseY;
         const worldDeltaX = deltaClientX / viewport.zoom;
@@ -488,6 +486,8 @@ const SelectionHandles: React.FC<SelectionHandlesProps> = ({
 
         let newWidth = width;
         let newHeight = height;
+        let newX = x;
+        let newY = y;
         let deltaX = 0;
         let deltaY = 0;
 
@@ -498,23 +498,36 @@ const SelectionHandles: React.FC<SelectionHandlesProps> = ({
         } else if (handle === 'se') {
           newWidth = width + worldDeltaX;
           newHeight = height + worldDeltaY;
-        } else if (handle === 'nw') {
-          newWidth = width - worldDeltaX;
-          newHeight = height - worldDeltaY;
-        } else if (handle === 'n') {
-          newHeight = height - worldDeltaY;
-        } else if (handle === 'ne') {
-          newWidth = width - worldDeltaX;
-          newHeight = height - worldDeltaY;
         } else if (handle === 'w') {
           newWidth = width - worldDeltaX;
-        } else if (handle === 'sw') {
+          newX = x + worldDeltaX;
+        } else if (handle === 'n') {
+          newHeight = height - worldDeltaY;
+          newY = y + worldDeltaY;
+        } else if (handle === 'nw') {
           newWidth = width - worldDeltaX;
+          newX = x + worldDeltaX;
+          newHeight = height - worldDeltaY;
+          newY = y + worldDeltaY;
+        } else if (handle === 'ne') {
+          newHeight = height - worldDeltaY;
+          newY = y + worldDeltaY;
+          newWidth = width + worldDeltaX;
+        } else if (handle === 'sw') {
           newHeight = height + worldDeltaY;
+          newWidth = width - worldDeltaX;
+          newX = x + worldDeltaX;
         }
 
-        // Apply the resize. For east/south edges, top-left stays fixed (deltaX/Y = 0)
-        resizeShape(selectedEntityIds[0], newWidth, newHeight, deltaX, deltaY);
+        resizeShape(
+          selectedEntityIds[0],
+          newWidth,
+          newHeight,
+          newX,
+          newY,
+          deltaX,
+          deltaY
+        );
       }
     };
 
