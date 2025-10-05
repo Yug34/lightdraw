@@ -168,6 +168,7 @@ export interface CanvasState {
   addGroup: (entityIds: string[], name?: string) => void;
   updateGroup: (id: string, updates: Partial<Group>) => void;
   deleteGroup: (id: string) => void;
+  ungroupGroup: (id: string) => void;
   calculateGroupBoundingBox: (entityIds: string[]) => {
     x: number;
     y: number;
@@ -323,24 +324,59 @@ export const useCanvasStore = create<CanvasState>()(
       }),
 
     deleteEntity: id =>
-      set(state => ({
-        history: [
-          ...state.history,
-          {
-            shapes: (state.shapes || []).map(s => ({ ...s })),
-            connectors: (state.connectors || []).map(c => ({ ...c })),
-            groups: (state.groups || []).map(g => ({ ...g })),
-          },
-        ],
-        canUndo: true,
-        shapes: (state.shapes || []).filter(shape => shape.id !== id),
-        connectors: (state.connectors || []).filter(
-          connector => connector.id !== id
-        ),
-        selectedEntityIds: state.selectedEntityIds.filter(
-          entityId => entityId !== id
-        ),
-      })),
+      set(state => {
+        // Check if the entity being deleted is a group
+        const groupToDelete = state.groups.find(group => group.id === id);
+
+        if (groupToDelete) {
+          // If deleting a group, delete all entities within the group as well
+          const entityIdsToDelete = groupToDelete.entityIds;
+
+          return {
+            history: [
+              ...state.history,
+              {
+                shapes: (state.shapes || []).map(s => ({ ...s })),
+                connectors: (state.connectors || []).map(c => ({ ...c })),
+                groups: (state.groups || []).map(g => ({ ...g })),
+              },
+            ],
+            canUndo: true,
+            shapes: (state.shapes || []).filter(
+              shape => shape.id !== id && !entityIdsToDelete.includes(shape.id)
+            ),
+            connectors: (state.connectors || []).filter(
+              connector =>
+                connector.id !== id && !entityIdsToDelete.includes(connector.id)
+            ),
+            groups: (state.groups || []).filter(group => group.id !== id),
+            selectedEntityIds: state.selectedEntityIds.filter(
+              entityId =>
+                entityId !== id && !entityIdsToDelete.includes(entityId)
+            ),
+          };
+        } else {
+          // Regular entity deletion (shape or connector)
+          return {
+            history: [
+              ...state.history,
+              {
+                shapes: (state.shapes || []).map(s => ({ ...s })),
+                connectors: (state.connectors || []).map(c => ({ ...c })),
+                groups: (state.groups || []).map(g => ({ ...g })),
+              },
+            ],
+            canUndo: true,
+            shapes: (state.shapes || []).filter(shape => shape.id !== id),
+            connectors: (state.connectors || []).filter(
+              connector => connector.id !== id
+            ),
+            selectedEntityIds: state.selectedEntityIds.filter(
+              entityId => entityId !== id
+            ),
+          };
+        }
+      }),
 
     selectEntity: id => set({ selectedEntityIds: [id] }),
 
@@ -707,16 +743,45 @@ export const useCanvasStore = create<CanvasState>()(
       })),
 
     deleteGroup: id =>
+      set(state => {
+        // Find the group to delete
+        const groupToDelete = state.groups.find(group => group.id === id);
+
+        if (!groupToDelete) {
+          return state; // Group not found, return unchanged state
+        }
+
+        // Get all entity IDs that belong to this group
+        const entityIdsToDelete = groupToDelete.entityIds;
+
+        return {
+          history: [
+            ...state.history,
+            {
+              shapes: (state.shapes || []).map(s => ({ ...s })),
+              connectors: (state.connectors || []).map(c => ({ ...c })),
+              groups: (state.groups || []).map(g => ({ ...g })),
+            },
+          ],
+          canUndo: true,
+          // Delete all shapes that belong to this group
+          shapes: (state.shapes || []).filter(
+            shape => !entityIdsToDelete.includes(shape.id)
+          ),
+          // Delete all connectors that belong to this group
+          connectors: (state.connectors || []).filter(
+            connector => !entityIdsToDelete.includes(connector.id)
+          ),
+          // Delete the group itself
+          groups: state.groups.filter(group => group.id !== id),
+          // Remove any deleted entities from selection
+          selectedEntityIds: state.selectedEntityIds.filter(
+            entityId => entityId !== id && !entityIdsToDelete.includes(entityId)
+          ),
+        };
+      }),
+    ungroupGroup: id =>
       set(state => ({
-        history: [
-          ...state.history,
-          {
-            shapes: (state.shapes || []).map(s => ({ ...s })),
-            connectors: (state.connectors || []).map(c => ({ ...c })),
-            groups: (state.groups || []).map(g => ({ ...g })),
-          },
-        ],
-        canUndo: true,
         groups: state.groups.filter(group => group.id !== id),
       })),
   }))

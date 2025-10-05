@@ -29,6 +29,7 @@ export const Toolbar: React.FC = () => {
     canUndo,
     addGroup,
     deleteGroup,
+    ungroupGroup,
   } = useCanvasStore();
 
   // Dialog state
@@ -98,14 +99,9 @@ export const Toolbar: React.FC = () => {
       groups.some(group => group.id === id)
     );
 
-    if (selectedGroups.length === 0) {
-      alert('Please select one or more groups to ungroup.');
-      return;
+    for (const groupId of selectedGroups) {
+      ungroupGroup(groupId);
     }
-
-    selectedGroups.forEach(groupId => {
-      deleteGroup(groupId);
-    });
   };
 
   // Check if we can group (have 2+ non-group entities selected)

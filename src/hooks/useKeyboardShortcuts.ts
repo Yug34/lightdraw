@@ -45,12 +45,12 @@ export const useCanvasKeyboardShortcuts = () => {
     {
       key: 'Delete',
       action: () => selectedEntityIds.forEach(id => deleteEntity(id)),
-      description: 'Delete selected shapes',
+      description: 'Delete selected entities (shapes, connectors, or groups)',
     },
     {
       key: 'Backspace',
       action: () => selectedEntityIds.forEach(id => deleteEntity(id)),
-      description: 'Delete selected shapes',
+      description: 'Delete selected entities (shapes, connectors, or groups)',
     },
     {
       key: 'Escape',
