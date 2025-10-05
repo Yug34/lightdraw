@@ -141,9 +141,7 @@ export interface CanvasState {
     width: number,
     height: number,
     x: number,
-    y: number,
-    deltaX?: number,
-    deltaY?: number
+    y: number
   ) => void;
   setToolMode: (mode: ToolMode) => void;
   clearToolMode: () => void;
@@ -384,7 +382,7 @@ export const useCanvasStore = create<CanvasState>()(
         ),
       })),
 
-    resizeShape: (id, width, height, x, y, deltaX = 0, deltaY = 0) => {
+    resizeShape: (id, width, height, x, y) => {
       set(state => {
         const newState = {
           history: [
@@ -402,8 +400,8 @@ export const useCanvasStore = create<CanvasState>()(
                   ...shape,
                   width: Math.max(10, width), // Minimum width of 10
                   height: Math.max(10, height), // Minimum height of 10
-                  x: x ?? shape.x + deltaX,
-                  y: y ?? shape.y + deltaY,
+                  x: x ?? shape.x,
+                  y: y ?? shape.y,
                 }
               : shape
           ),

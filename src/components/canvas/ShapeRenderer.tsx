@@ -491,43 +491,22 @@ const SelectionHandles: React.FC<SelectionHandlesProps> = ({
         let deltaX = 0;
         let deltaY = 0;
 
-        if (handle === 'e') {
+        if (handle.includes('e')) {
           newWidth = width + worldDeltaX;
-        } else if (handle === 's') {
+        }
+        if (handle.includes('s')) {
           newHeight = height + worldDeltaY;
-        } else if (handle === 'se') {
-          newWidth = width + worldDeltaX;
-          newHeight = height + worldDeltaY;
-        } else if (handle === 'w') {
-          newWidth = width - worldDeltaX;
-          newX = x + worldDeltaX;
-        } else if (handle === 'n') {
-          newHeight = height - worldDeltaY;
-          newY = y + worldDeltaY;
-        } else if (handle === 'nw') {
-          newWidth = width - worldDeltaX;
-          newX = x + worldDeltaX;
-          newHeight = height - worldDeltaY;
-          newY = y + worldDeltaY;
-        } else if (handle === 'ne') {
-          newHeight = height - worldDeltaY;
-          newY = y + worldDeltaY;
-          newWidth = width + worldDeltaX;
-        } else if (handle === 'sw') {
-          newHeight = height + worldDeltaY;
+        }
+        if (handle.includes('w')) {
           newWidth = width - worldDeltaX;
           newX = x + worldDeltaX;
         }
+        if (handle.includes('n')) {
+          newHeight = height - worldDeltaY;
+          newY = y + worldDeltaY;
+        }
 
-        resizeShape(
-          selectedEntityIds[0],
-          newWidth,
-          newHeight,
-          newX,
-          newY,
-          deltaX,
-          deltaY
-        );
+        resizeShape(selectedEntityIds[0], newWidth, newHeight, newX, newY);
       }
     };
 
