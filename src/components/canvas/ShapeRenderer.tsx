@@ -488,8 +488,6 @@ const SelectionHandles: React.FC<SelectionHandlesProps> = ({
         let newHeight = height;
         let newX = x;
         let newY = y;
-        let deltaX = 0;
-        let deltaY = 0;
 
         if (handle.includes('e')) {
           newWidth = width + worldDeltaX;

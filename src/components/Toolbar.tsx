@@ -46,8 +46,15 @@ export const Toolbar: React.FC = () => {
   const selectLineTool = () => setToolMode('line');
   const selectDoubleArrowTool = () => setToolMode('double-arrow');
   const selectDottedTool = () => setToolMode('dotted');
-  const deleteSelected = () =>
-    selectedEntityIds.forEach(id => deleteEntity(id));
+  const deleteSelected = () => {
+    selectedEntityIds.forEach(id => {
+      if (id.includes('group-')) {
+        deleteGroup(id);
+      } else {
+        deleteEntity(id);
+      }
+    });
+  };
   const handleClearAll = () => {
     if (
       confirm(
