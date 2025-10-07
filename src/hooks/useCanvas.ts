@@ -81,6 +81,11 @@ export const useCanvas = (options: UseCanvasOptions = {}) => {
   // Handle zoom and pan with wheel events
   useEffect(() => {
     const handleWheel = (e: WheelEvent) => {
+      // Only handle wheel events if they're happening on the canvas or its children
+      if (!svgRef.current || !svgRef.current.contains(e.target as Node)) {
+        return;
+      }
+
       if (e.ctrlKey && enableZoom) {
         // Handle zoom with Ctrl+wheel
         e.preventDefault();
@@ -123,7 +128,10 @@ export const useCanvas = (options: UseCanvasOptions = {}) => {
     });
 
     return () => {
-      document.removeEventListener('wheel', handleWheel, { capture: true });
+      document.removeEventListener('wheel', handleWheel, {
+        passive: false,
+        capture: true,
+      });
     };
   }, [viewport, enableZoom, enablePan, setViewportZoom, setViewport]);
 

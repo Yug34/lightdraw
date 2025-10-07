@@ -43,7 +43,7 @@ export const CanvasSidebar = () => {
 
   return (
     <Sidebar>
-      <SidebarContent>
+      <SidebarContent className="overflow-y-auto">
         <SidebarGroup className="flex-1 min-h-0 flex flex-col gap-y-4">
           <SidebarGroupContent className="p-2">
             {selectedEntityIds.length === 0 && (
