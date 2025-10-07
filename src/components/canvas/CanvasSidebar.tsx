@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useCanvasStore } from '@/store/canvasStore';
-import { ChevronLeftIcon, ChevronRightIcon } from 'lucide-react';
+import { ChevronLeftIcon, ChevronRightIcon, Sun, Moon } from 'lucide-react';
 import ColorPicker from '@/components/ColorPicker';
 import { capitalize } from '@/lib/utils';
 
@@ -45,7 +45,7 @@ export const CanvasSidebar = () => {
     <Sidebar>
       <SidebarContent>
         <SidebarGroup className="flex-1 min-h-0 flex flex-col gap-y-4">
-          <SidebarGroupContent className="overflow-y-auto p-2">
+          <SidebarGroupContent className="p-2">
             {selectedEntityIds.length === 0 && (
               <div className="space-y-3 px-1 py-1">
                 <div className="text-sm text-muted-foreground">
@@ -54,22 +54,23 @@ export const CanvasSidebar = () => {
                 <Separator />
                 <div className="space-y-2">
                   <div className="text-sm font-medium">Canvas Theme</div>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant={theme === 'light' ? 'default' : 'outline'}
-                      size="sm"
-                      onClick={() => setTheme('light')}
-                    >
-                      Light
-                    </Button>
-                    <Button
-                      variant={theme === 'dark' ? 'default' : 'outline'}
-                      size="sm"
-                      onClick={() => setTheme('dark')}
-                    >
-                      Dark
-                    </Button>
-                  </div>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="cursor-pointer"
+                    aria-label={'Toggle Theme'}
+                    onClick={() => {
+                      if (theme === 'light') {
+                        setTheme('dark');
+                      } else {
+                        setTheme('light');
+                      }
+                    }}
+                  >
+                    <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+                    <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+                    <span className="sr-only">Toggle theme</span>
+                  </Button>
                 </div>
               </div>
             )}
