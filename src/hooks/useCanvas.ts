@@ -128,10 +128,7 @@ export const useCanvas = (options: UseCanvasOptions = {}) => {
     });
 
     return () => {
-      document.removeEventListener('wheel', handleWheel, {
-        passive: false,
-        capture: true,
-      });
+      document.removeEventListener('wheel', handleWheel);
     };
   }, [viewport, enableZoom, enablePan, setViewportZoom, setViewport]);
 
